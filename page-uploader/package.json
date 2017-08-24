@@ -11,5 +11,8 @@
     "url": "https://github.com/ftlabs/ftda/page-uploader"
   },
   "author": "Sean M. Tracey & Lily Madar",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^1.7.5"
+  }
 }
