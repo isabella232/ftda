@@ -17,6 +17,8 @@
     "electron": "^1.7.5"
   },
   "dependencies": {
+    "@monolambda/s3": "^1.0.2",
+    "dotenv": "^4.0.0",
     "fs": "0.0.1-security"
   }
 }

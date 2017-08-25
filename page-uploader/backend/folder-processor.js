@@ -1,11 +1,14 @@
 const fs = require('fs');
 const path = require('path');
+const bucketUpload = require('./s3-upload.js');
 let filesToUpload = [];
+let trackFolders = 0;
 
 function processFolderContents(folders) {
 	if(folders === undefined) return;
 
 	folders.forEach(folder => {
+		++trackFolders;
 		fs.readdir(folder, (err, contents) => {
 			if(err) {
 				throw err;
@@ -21,7 +24,7 @@ function processFolderContents(folders) {
 		  			contents.forEach(content => {
 		  				nestedFolders.push(folder + '/' + content);
 		  			});
-
+		  			--trackFolders;
 		  			processFolderContents(nestedFolders);
 		  		} else {
 		  			saveFolderData(folder);
@@ -41,13 +44,21 @@ function saveFolderData(folder) {
 		files.forEach(file => {
 			if(path.extname(file) === '.xml') {
 				issueData.xml = folder + '/' + file;
-			} else {
+			} else if(path.extname(file) === '.JPG'){
 				issueData.jpgs.push(folder + '/' + file);
 			}
 		});
-		
+
 		filesToUpload.push(issueData);
-		console.log(filesToUpload);
+		--trackFolders;
+
+		if(trackFolders === 0) {
+			console.log('DONE', filesToUpload.length);
+			
+			//TODO: rem later
+			bucketUpload.uploadFiles(filesToUpload[0].jpgs[0], filesToUpload[0].issueDate);
+			// resetFileUpload();
+		}
 	});
 }
 
