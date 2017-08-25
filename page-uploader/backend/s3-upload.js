@@ -14,7 +14,11 @@ const client = s3.createClient({
 	}
 });
 
-function uploadFiles(file, path) {
+function uploadFiles(pageData, isXML, callback) {
+	const files = pageData.jpgs;
+	const path = pageData.issueDate;
+	const file = isXML?pageData.xml:files[0];
+
 	const params = {
 		localFile: file,
 
@@ -30,11 +34,21 @@ function uploadFiles(file, path) {
 	});
 
 	uploader.on('progress', function() {
-		console.log("progress", uploader.progressMd5Amount, uploader.progressAmount, uploader.progressTotal);
+		// console.log("progress", uploader.progressMd5Amount, uploader.progressAmount, uploader.progressTotal);
 	});
 
 	uploader.on('end', function() {
-		console.log("done uploading");
+		files.shift();
+		
+		if(files.length > 0) {
+			uploadFiles(pageData, false, callback);	
+		} else {
+			if(isXML) {
+				callback();	
+			} else {
+				uploadFiles(pageData, true, callback);
+			}
+		}
 	});
 
 }

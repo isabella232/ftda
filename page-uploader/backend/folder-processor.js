@@ -53,11 +53,16 @@ function saveFolderData(folder) {
 		--trackFolders;
 
 		if(trackFolders === 0) {
-			console.log('DONE', filesToUpload.length);
+			// console.log('DONE', filesToUpload.length);
+
+			for(let i = 0; i < filesToUpload.length; ++i) {
+				bucketUpload.uploadFiles(filesToUpload[i], false, () => {
+					console.log('DONE');
+					// resetFileUpload();
+				});
+			}
 			
-			//TODO: rem later
-			bucketUpload.uploadFiles(filesToUpload[0].jpgs[0], filesToUpload[0].issueDate);
-			// resetFileUpload();
+			// console.log('FINISHED');
 		}
 	});
 }
