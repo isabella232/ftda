@@ -22,8 +22,5 @@ database.connect({
 			})
 		;
 		
-		console.log('what')
-		
 	})
 ;
-
