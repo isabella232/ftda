@@ -6,10 +6,12 @@ const { dialog } = electron;
 const path = require('path');
 const url = require('url');
 
+const folderProcessor = require('./backend/folder-processor.js');
+
 let mainWindow;
 
 function createWindow () {
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    mainWindow = new BrowserWindow({width: 800, height: 600, x: 560, y: -1057});
 
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
@@ -37,7 +39,7 @@ app.on('activate', () => {
 });
 
 ipcMain.on('show-dialog', () => {
-    dialog.showOpenDialog(mainWindow, {properties: ['openDirectory', 'multiSelections']}, (folders) => {
-        console.log(folders);
+    dialog.showOpenDialog(mainWindow, {properties: ['openDirectory', 'multiSelections']}, folders => {
+        folderProcessor.readFolders(folders);
     });
 });
