@@ -38,8 +38,36 @@ app.on('activate', () => {
     }
 });
 
-ipcMain.on('show-dialog', () => {
+function showSelectDialog(event, files) {
+    event.sender.send('files-exist', files);
+}
+
+ipcMain.on('show-dialog', event => {
     dialog.showOpenDialog(mainWindow, {properties: ['openDirectory', 'multiSelections']}, folders => {
-        folderProcessor.readFolders(folders);
+        folderProcessor.readFolders(folders, () => {
+            const existing = folderProcessor.getExisting();
+            if(existing.length > 0) {
+                showSelectDialog(event, existing);
+            } else {
+                folderProcessor.upload(null, () => {
+                    console.log('DONE');
+                    folderProcessor.reset();
+                });
+            }
+        });
+    });
+});
+
+ipcMain.on('exclude-files', (event, files) => {
+    let excludedFolders = null;
+
+    if(files !== null) {
+        const folders = files.map(item => { return item.path});
+        excludedFolders = Array.from(new Set(folders));
+    }
+
+    folderProcessor.upload(excludedFolders, () => {
+        console.log('DONE');
+        folderProcessor.reset();
     });
 });

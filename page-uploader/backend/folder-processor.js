@@ -4,8 +4,9 @@ const bucketUpload = require('./s3-upload.js');
 let filesToUpload = [];
 let trackFolders = 0;
 let processedFolders = 0;
+let existingFiles;
 
-function processFolderContents(folders) {
+function processFolderContents(folders, callback) {
 	if (folders === undefined) return;
 
 	folders.forEach(folder => {
@@ -26,16 +27,16 @@ function processFolderContents(folders) {
 		  				nestedFolders.push(folder + '/' + content);
 		  			});
 		  			--trackFolders;
-		  			processFolderContents(nestedFolders);
+		  			processFolderContents(nestedFolders, callback);
 		  		} else {
-		  			saveFolderData(folder);
+		  			saveFolderData(folder, callback);
 		  		}
 		  	});
 		});
 	});
 }
 
-function saveFolderData(folder) {
+function saveFolderData(folder, callback) {
 	const folderID = folder.split('/').pop();
 	const issueData = {};
 	issueData.jpgs = [];
@@ -54,23 +55,56 @@ function saveFolderData(folder) {
 		--trackFolders;
 
 		if (trackFolders === 0) {
-			for(let i = 0; i < filesToUpload.length; ++i) {
-				bucketUpload.uploadFiles(filesToUpload[i], false, () => {
-					++processedFolders;
-					if (processedFolders === filesToUpload.length) {
-						resetFileUpload();
-					}
-				});
-			}
+			bucketUpload.checkFiles(filesToUpload, files => {
+				setFiles(files);
+				callback();
+			});
 		}
 	});
 }
 
+function uploadFiles(excludes, callback) {
+	if(excludes !== null) {
+		//TODO later: when non exclude-all option, rem individual files
+		for(i in excludes) {
+			const folder = excludes[i];
+			filesToUpload = filesToUpload.filter((item) => {
+				return item.issueDate !== excludes[i];
+			});
+		}
+	}
+
+	if(filesToUpload.length > 0) {
+		for(let i = 0; i < filesToUpload.length; ++i) {
+			bucketUpload.uploadFiles(filesToUpload[i], false, () => {
+				++processedFolders;
+				if (processedFolders === filesToUpload.length) {
+					callback();
+				}
+			});
+		}
+	} else {
+		callback();
+	}
+}
+
+function setFiles(files) {
+	existingFiles = files;
+}
+
+function getFiles() {
+	return existingFiles;
+}
+
 function resetFileUpload() {
+	existingFiles = [];
 	processedFolders = 0;
 	filesToUpload = [];
 }
 
 module.exports = {
-	readFolders: processFolderContents
+	readFolders: processFolderContents,
+	getExisting: getFiles,
+	reset: resetFileUpload,
+	upload: uploadFiles
 }

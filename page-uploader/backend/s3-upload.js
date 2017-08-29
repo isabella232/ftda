@@ -2,7 +2,7 @@ require('dotenv').config();
 const s3 = require('@monolambda/s3');
 
 //TODO: check if file exists in s3 first, give a full list in dialog with options to select individuals or all/none
-//TODO:add stats: x amount uploaded, y amount to go (issues + pages)
+//TODO: add stats: x amount uploaded, y amount to go (issues + pages)
 //TODO: handle errors
 
 const client = s3.createClient({
@@ -17,6 +17,39 @@ const client = s3.createClient({
 		region: process.env.AWS_REGION
 	}
 });
+
+function checkFiles(archiveData, callback) {
+	const files = [];
+	const filesFound = [];
+
+	for(i in archiveData) {
+		const pageData = archiveData[i];
+		for(j in pageData.jpgs) {
+			files.push({ file: pageData.jpgs[j], path: pageData.issueDate });
+		}
+
+		files.push({ file: pageData.xml, path: pageData.issueDate });
+	}
+
+	Array.from(files).forEach((fileObject, i) => {
+		const path = fileObject.path;
+		const file = fileObject.file.split('/').pop();
+
+		client.s3.headObject({
+		  Bucket: process.env.AWS_BUCKET,
+		  Key: path + '/' + file
+		}, function(err, data) {
+			if (!err) {	
+				filesFound.push(fileObject);
+			}
+
+			if (i === files.length - 1) {
+				callback(filesFound);
+			}
+		});
+	});
+}
+
 
 function uploadFiles(pageData, isXML, callback) {
 	const files = pageData.jpgs;
@@ -58,5 +91,6 @@ function uploadFiles(pageData, isXML, callback) {
 }
 
 module.exports = {
+	checkFiles: checkFiles,
 	uploadFiles: uploadFiles
 }
