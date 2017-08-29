@@ -1,6 +1,10 @@
 require('dotenv').config();
 const s3 = require('@monolambda/s3');
 
+//TODO: check if file exists in s3 first, give a full list in dialog with options to select individuals or all/none
+//TODO:add stats: x amount uploaded, y amount to go (issues + pages)
+//TODO: handle errors
+
 const client = s3.createClient({
 	maxAsyncS3: 20,
 	s3RetryCount: 3,
