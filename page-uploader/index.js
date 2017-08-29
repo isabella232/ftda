@@ -42,6 +42,10 @@ function showSelectDialog(event, files) {
     event.sender.send('files-exist', files);
 }
 
+function showProgress(event, values) {
+    event.sender.send('upload-progress', values);
+}
+
 ipcMain.on('show-dialog', event => {
     dialog.showOpenDialog(mainWindow, {properties: ['openDirectory', 'multiSelections']}, folders => {
         folderProcessor.reset();
@@ -50,9 +54,12 @@ ipcMain.on('show-dialog', event => {
             if(existing.length > 0) {
                 showSelectDialog(event, existing);
             } else {
-                folderProcessor.upload(null, () => {
-                    console.log('DONE');
-                    folderProcessor.reset();
+                folderProcessor.upload(null, (progress, allDone) => {
+                    showProgress(event, progress);
+
+                    if(allDone) {
+                        folderProcessor.reset();
+                    }
                 });
             }
         });
@@ -67,8 +74,11 @@ ipcMain.on('exclude-files', (event, files) => {
         excludedFolders = Array.from(new Set(folders));
     }
 
-    folderProcessor.upload(excludedFolders, () => {
-        console.log('DONE');
-        folderProcessor.reset();
+    folderProcessor.upload(excludedFolders, (progress, allDone) => {
+        showProgress(event, progress);
+
+        if(allDone) {
+            folderProcessor.reset();
+        }
     });
 });

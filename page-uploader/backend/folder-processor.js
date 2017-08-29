@@ -77,13 +77,11 @@ function uploadFiles(excludes, callback) {
 		for(let i = 0; i < filesToUpload.length; ++i) {
 			bucketUpload.uploadFiles(filesToUpload[i], false, () => {
 				++processedFolders;
-				if (processedFolders === filesToUpload.length) {
-					callback();
-				}
+				callback({amount: processedFolders, total: filesToUpload.length}, (processedFolders === filesToUpload.length));
 			});
 		}
 	} else {
-		callback();
+		callback(null, true);
 	}
 }
 

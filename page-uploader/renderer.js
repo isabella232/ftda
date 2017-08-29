@@ -59,3 +59,13 @@ ipcRenderer.on('files-exist', (event, files) => {
 
 	fileSubmit.insertBefore(existingFiles, submit);
 });
+
+ipcRenderer.on('upload-progress', (event, values) => {
+	const progress = document.getElementById('progress');
+
+	if(values === null) {
+		progress.textContent = 'No issues to update';
+	} else {
+		progress.textContent = `Uploaded: ${values.amount} issue${values.amount > 1?'s':''} out of ${values.total}`;
+	}
+});
