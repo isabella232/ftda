@@ -2,6 +2,11 @@ const { ipcRenderer } = require('electron');
 const trigger = document.getElementById('trigger');
 
 trigger.addEventListener('click', () => {
+	let fileList = document.querySelector('#existingFiles ul');
+	if(fileList) {
+		fileList.remove();
+	}
+
 	ipcRenderer.send('show-dialog');
 });
 

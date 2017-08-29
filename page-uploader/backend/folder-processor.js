@@ -56,8 +56,7 @@ function saveFolderData(folder, callback) {
 
 		if (trackFolders === 0) {
 			bucketUpload.checkFiles(filesToUpload, files => {
-				setFiles(files);
-				callback();
+				callback(files);
 			});
 		}
 	});
@@ -88,23 +87,15 @@ function uploadFiles(excludes, callback) {
 	}
 }
 
-function setFiles(files) {
-	existingFiles = files;
-}
-
-function getFiles() {
-	return existingFiles;
-}
-
 function resetFileUpload() {
-	existingFiles = [];
 	processedFolders = 0;
+	trackFolders = 0;
+	existingFiles = [];
 	filesToUpload = [];
 }
 
 module.exports = {
 	readFolders: processFolderContents,
-	getExisting: getFiles,
 	reset: resetFileUpload,
 	upload: uploadFiles
 }

@@ -20,7 +20,6 @@ const client = s3.createClient({
 
 function checkFiles(archiveData, callback) {
 	const files = [];
-	const filesFound = [];
 
 	for(i in archiveData) {
 		const pageData = archiveData[i];
@@ -31,23 +30,28 @@ function checkFiles(archiveData, callback) {
 		files.push({ file: pageData.xml, path: pageData.issueDate });
 	}
 
-	Array.from(files).forEach((fileObject, i) => {
+
+	const filesFound = Array.from(files).map((fileObject, i) => {
 		const path = fileObject.path;
 		const file = fileObject.file.split('/').pop();
 
-		client.s3.headObject({
-		  Bucket: process.env.AWS_BUCKET,
-		  Key: path + '/' + file
-		}, function(err, data) {
-			if (!err) {	
-				filesFound.push(fileObject);
-			}
-
-			if (i === files.length - 1) {
-				callback(filesFound);
-			}
+		return new Promise((resolve, reject) => {
+			client.s3.headObject({
+			  Bucket: process.env.AWS_BUCKET,
+			  Key: path + '/' + file
+			}, (err, data) => {
+				if (!err) {
+					resolve(fileObject);
+				} else {
+					resolve(null);
+				}
+			});
 		});
 	});
+
+	Promise.all(filesFound).then(data => callback(data.filter(item => {
+		return item !== null;
+	})));
 }
 
 

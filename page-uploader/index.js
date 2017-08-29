@@ -44,8 +44,9 @@ function showSelectDialog(event, files) {
 
 ipcMain.on('show-dialog', event => {
     dialog.showOpenDialog(mainWindow, {properties: ['openDirectory', 'multiSelections']}, folders => {
-        folderProcessor.readFolders(folders, () => {
-            const existing = folderProcessor.getExisting();
+        folderProcessor.reset();
+        folderProcessor.readFolders(folders, files => {
+            const existing = files;
             if(existing.length > 0) {
                 showSelectDialog(event, existing);
             } else {
