@@ -100,7 +100,7 @@ function uploadFiles(excludeFiles, callback) {
 					++processedFolders;
 				}
 
-				callback({amount: processedFolders, total: filesToUpload.length, files: processedFiles, filesTotal: filesTotal}, (processedFolders === filesToUpload.length));
+				callback({amount: processedFolders, total: filesToUpload.length, files: processedFiles, filesTotal: filesTotal, ignored: excludeFiles}, (processedFolders === filesToUpload.length));
 			});
 		}
 	} else {
