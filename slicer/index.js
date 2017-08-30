@@ -190,6 +190,10 @@ database.connect(databaseConnectionDetails)
 					currentJob = undefined;
 					isProcessing = false;
 				})
+				.catch(function(err){
+					console.log('Catastrophic error. Exiting process', err);
+					process.exit();
+				})
 			;
 		}
 	})
