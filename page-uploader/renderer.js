@@ -15,7 +15,8 @@ trigger.addEventListener('click', () => {
 fileSubmit.addEventListener('submit', e => {
 	e.preventDefault();
 	
-	const filesToExclude = checkall.checked?null:currentFiles;
+	const filesToExclude = checkall.checked?null:checkExcludeFiles();
+
 	ipcRenderer.send('exclude-files', filesToExclude);
 
 	fileSubmit.querySelector('ul').remove();
@@ -23,10 +24,24 @@ fileSubmit.addEventListener('submit', e => {
 	currentFiles = null;
 });
 
+function checkExcludeFiles() {
+	const fileSelection = fileSubmit.querySelectorAll('.file');
+	const excludeFiles = [];
+
+	Array.from(fileSelection).forEach(file => {
+		if(!file.checked) {
+			excludeFiles.push(JSON.parse(file.getAttribute('data-origin')));	
+		}
+	});
+
+	return (excludeFiles.length > 0)?excludeFiles:null;
+}
+
 
 ipcRenderer.on('files-exist', (event, files) => {
 	const existingFiles = document.createElement('ul');
-	const submit = document.querySelector('#existingFiles input[type="submit"]'); 
+	const submit = document.querySelector('#existingFiles input[type="submit"]');
+	const checkall = document.getElementById('checkall'); 
 	currentFiles = files;
 
 	for(i in files) {
@@ -34,11 +49,22 @@ ipcRenderer.on('files-exist', (event, files) => {
 
 		const file = document.createElement('input');
 		file.setAttribute('type', 'checkbox');
-		file.setAttribute('checked', 'checked');
-		file.setAttribute('disabled', 'disabled');
+		file.checked = true;
 		file.setAttribute('id', i);
 		file.setAttribute('class', 'file');
 		file.setAttribute('data-origin', JSON.stringify(files[i]));
+		
+		if(files[i].file.split('.').pop() === 'xml') {
+			file.setAttribute('disabled', 'disabled');
+		}
+
+		file.addEventListener('click', e => {
+			if(!e.target.checked) {
+				checkall.checked = false;
+			} else {
+				checkall.checked = (checkExcludeFiles() === null);
+			}
+		});
 
 		const fileName = document.createElement('label');
 		fileName.setAttribute('for', i);
@@ -52,13 +78,13 @@ ipcRenderer.on('files-exist', (event, files) => {
 
 	fileSubmit.style.display = 'inherit';
 
-	const checkall = document.getElementById('checkall');
 	checkall.addEventListener('click', e => {
-		document.querySelectorAll('.file').forEach(input => {
-			if(e.target.checked) {
-				input.setAttribute('checked', 'checked');
+		const allChecked = e.target.checked;
+		Array.from(fileSubmit.querySelectorAll('.file:not(:disabled)')).forEach(input => {
+			if(allChecked) {
+				input.checked = true;
 			} else {
-				input.removeAttribute('checked');
+				input.checked = false;
 			}
 		});
 	});

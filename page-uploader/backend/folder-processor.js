@@ -66,16 +66,29 @@ function saveFolderData(folder, callback) {
 	});
 }
 
-function uploadFiles(excludes, excludedFilesTotal, callback) {
-	if(excludes !== null) {
-		filesTotal -= excludedFilesTotal;
-		//TODO later: when non exclude-all option, rem individual files
-		for(i in excludes) {
-			const folder = excludes[i];
-			filesToUpload = filesToUpload.filter((item) => {
-				return item.issueDate !== excludes[i];
-			});
-		}
+function uploadFiles(excludeFiles, callback) {
+	if(excludeFiles !== null) {
+		filesTotal -= excludeFiles.length;
+
+		filesToUpload = filesToUpload.map(obj => {
+		    obj.jpgs = obj.jpgs.map(file => {
+
+		        let shouldUpload = true;
+
+		        excludeFiles.forEach(item => {
+		            if(item.file === file){
+		                shouldUpload = false;
+		            }
+		        });
+
+		        return shouldUpload ? file : false;
+
+		    }).filter(item => {
+		        return item !== false;
+		    });
+
+		    return obj;
+		});
 	}
 
 	if(filesToUpload.length > 0) {

@@ -55,6 +55,11 @@ function checkFiles(archiveData, callback) {
 
 function uploadFiles(pageData, isXML, callback) {
 	const files = pageData.jpgs;
+	
+	if(files.length === 0) {
+		isXML = true;
+	}
+
 	const path = pageData.issueDate;
 	const file = isXML?pageData.xml:files[0];
 

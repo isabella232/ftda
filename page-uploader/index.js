@@ -69,12 +69,7 @@ ipcMain.on('show-dialog', event => {
 ipcMain.on('exclude-files', (event, files) => {
     let excludedFolders = null;
 
-    if(files !== null) {
-        const folders = files.map(item => { return item.path});
-        excludedFolders = Array.from(new Set(folders));
-    }
-
-    folderProcessor.upload(excludedFolders, files.length, (progress, allDone) => {
+    folderProcessor.upload(files, (progress, allDone) => {
         showProgress(event, progress);
 
         if(allDone) {
