@@ -3,7 +3,7 @@ require('node-babel')();
 const dotenv = require('dotenv').config();
 
 const debug = require('debug')('identify:index');
-const AWS = require("aws-sdk");
+const AWS = require('aws-sdk');
 const argv = require('yargs').argv;
 const uuid = require('uuid').v4;
 const co = require('co');
