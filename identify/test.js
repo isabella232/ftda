@@ -1,6 +1,5 @@
-const lFunction = require('./index');
+const lambdaFunction = require('./index');
 
-
-lFunction.handle({}, {}, function(){
+lambdaFunction.handle({}, {}, function(){
 	process.exit();
 }, true);

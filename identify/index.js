@@ -11,7 +11,7 @@ const fs = require('fs');
 const tmpPath = process.env.TMPPATH || '/tmp/';
 
 const xmlParser = require('./xml-parser');
-const database = require('../database-interface/');
+const database = require('./database-interface/');
 
 const S3 = new AWS.S3();
 
