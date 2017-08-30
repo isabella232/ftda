@@ -66,8 +66,9 @@ function saveFolderData(folder, callback) {
 	});
 }
 
-function uploadFiles(excludes, callback) {
+function uploadFiles(excludes, excludedFilesTotal, callback) {
 	if(excludes !== null) {
+		filesTotal -= excludedFilesTotal;
 		//TODO later: when non exclude-all option, rem individual files
 		for(i in excludes) {
 			const folder = excludes[i];

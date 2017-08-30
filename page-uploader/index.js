@@ -74,7 +74,7 @@ ipcMain.on('exclude-files', (event, files) => {
         excludedFolders = Array.from(new Set(folders));
     }
 
-    folderProcessor.upload(excludedFolders, (progress, allDone) => {
+    folderProcessor.upload(excludedFolders, files.length, (progress, allDone) => {
         showProgress(event, progress);
 
         if(allDone) {
