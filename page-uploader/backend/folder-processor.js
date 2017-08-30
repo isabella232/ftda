@@ -60,7 +60,7 @@ function saveFolderData(folder, callback) {
 
 		if (trackFolders === 0) {
 			bucketUpload.checkFiles(filesToUpload, files => {
-				callback(files);
+				callback(files, filesTotal);
 			});
 		}
 	});

@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron');
 const trigger = document.getElementById('trigger');
 const fileSubmit = document.getElementById('existingFiles');
+const progress = document.getElementById('progress');
 let currentFiles = null;
 
 trigger.addEventListener('click', () => {
@@ -38,10 +39,11 @@ function checkExcludeFiles() {
 }
 
 
-ipcRenderer.on('files-exist', (event, files) => {
+ipcRenderer.on('files-exist', (event, files, total) => {
 	const existingFiles = document.createElement('ul');
 	const submit = document.querySelector('#existingFiles input[type="submit"]');
-	const checkall = document.getElementById('checkall'); 
+	const checkall = document.getElementById('checkall');
+	progress.textContent = `You have chosen ${total} files to upload, ${files.length} files already exist. Please select files to override before proceeding:`;
 	currentFiles = files;
 
 	for(i in files) {
@@ -93,8 +95,6 @@ ipcRenderer.on('files-exist', (event, files) => {
 });
 
 ipcRenderer.on('upload-progress', (event, values) => {
-	const progress = document.getElementById('progress');
-
 	if(values === null) {
 		progress.textContent = 'No issues to update';
 	} else {
