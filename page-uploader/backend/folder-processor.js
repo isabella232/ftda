@@ -4,13 +4,15 @@ const bucketUpload = require('./s3-upload.js');
 let filesToUpload = [];
 let trackFolders = 0;
 let processedFolders = 0;
-let existingFiles;
+let processedFiles = 0;
+let filesTotal = 0;
 
 function processFolderContents(folders, callback) {
 	if (folders === undefined) return;
 
 	folders.forEach(folder => {
 		++trackFolders;
+
 		fs.readdir(folder, (err, contents) => {
 			if(err) {
 				throw err;
@@ -45,8 +47,10 @@ function saveFolderData(folder, callback) {
 	fs.readdir(folder, (err, files) => {
 		files.forEach(file => {
 			if(path.extname(file) === '.xml') {
+				++filesTotal;
 				issueData.xml = folder + '/' + file;
 			} else if(path.extname(file) === '.JPG'){
+				++filesTotal;
 				issueData.jpgs.push(folder + '/' + file);
 			}
 		});
@@ -75,9 +79,14 @@ function uploadFiles(excludes, callback) {
 
 	if(filesToUpload.length > 0) {
 		for(let i = 0; i < filesToUpload.length; ++i) {
-			bucketUpload.uploadFiles(filesToUpload[i], false, () => {
-				++processedFolders;
-				callback({amount: processedFolders, total: filesToUpload.length}, (processedFolders === filesToUpload.length));
+			bucketUpload.uploadFiles(filesToUpload[i], false, done => {
+				++processedFiles;
+
+				if(done) {
+					++processedFolders;
+				}
+
+				callback({amount: processedFolders, total: filesToUpload.length, files: processedFiles, filesTotal: filesTotal}, (processedFolders === filesToUpload.length));
 			});
 		}
 	} else {
@@ -86,9 +95,10 @@ function uploadFiles(excludes, callback) {
 }
 
 function resetFileUpload() {
+	processedFiles = 0;
+	filesTotal = 0;
 	processedFolders = 0;
 	trackFolders = 0;
-	existingFiles = [];
 	filesToUpload = [];
 }
 

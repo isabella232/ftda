@@ -1,5 +1,7 @@
 const { ipcRenderer } = require('electron');
 const trigger = document.getElementById('trigger');
+const fileSubmit = document.getElementById('existingFiles');
+let currentFiles = null;
 
 trigger.addEventListener('click', () => {
 	let fileList = document.querySelector('#existingFiles ul');
@@ -10,9 +12,22 @@ trigger.addEventListener('click', () => {
 	ipcRenderer.send('show-dialog');
 });
 
+fileSubmit.addEventListener('submit', e => {
+	e.preventDefault();
+	
+	const filesToExclude = checkall.checked?null:currentFiles;
+	ipcRenderer.send('exclude-files', filesToExclude);
+
+	fileSubmit.querySelector('ul').remove();
+	fileSubmit.style.display = 'none';
+	currentFiles = null;
+});
+
+
 ipcRenderer.on('files-exist', (event, files) => {
 	const existingFiles = document.createElement('ul');
 	const submit = document.querySelector('#existingFiles input[type="submit"]'); 
+	currentFiles = files;
 
 	for(i in files) {
 		const container = document.createElement('li');
@@ -35,7 +50,6 @@ ipcRenderer.on('files-exist', (event, files) => {
 		existingFiles.appendChild(container);
 	}
 
-	const fileSubmit = document.getElementById('existingFiles');
 	fileSubmit.style.display = 'inherit';
 
 	const checkall = document.getElementById('checkall');
@@ -49,14 +63,6 @@ ipcRenderer.on('files-exist', (event, files) => {
 		});
 	});
 
-	fileSubmit.addEventListener('submit', e => {
-		e.preventDefault();
-
-		const filesToExclude = checkall.checked?null:files;
-		ipcRenderer.send('exclude-files', filesToExclude);
-		fileSubmit.style.display = 'none';
-	});
-
 	fileSubmit.insertBefore(existingFiles, submit);
 });
 
@@ -66,6 +72,8 @@ ipcRenderer.on('upload-progress', (event, values) => {
 	if(values === null) {
 		progress.textContent = 'No issues to update';
 	} else {
-		progress.textContent = `Uploaded: ${values.amount} issue${values.amount > 1?'s':''} out of ${values.total}`;
+		progress.textContent = `Uploaded: ${values.amount} issue${values.amount > 1?'s':''} out of ${values.total}; ${values.files} file${values.files > 1?'s':''} out of ${values.filesTotal}`;
 	}
+
+	//TODO: delete textContent when uploading new files.
 });

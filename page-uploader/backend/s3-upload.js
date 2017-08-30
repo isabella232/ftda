@@ -1,7 +1,6 @@
 require('dotenv').config();
 const s3 = require('@monolambda/s3');
 
-//TODO: add stats: x amount uploaded, y amount to go (issues + pages)
 //TODO: handle errors
 
 const client = s3.createClient({
@@ -79,16 +78,17 @@ function uploadFiles(pageData, isXML, callback) {
 
 	uploader.on('end', function() {
 		files.shift();
-		
 		if(files.length > 0) {
 			uploadFiles(pageData, false, callback);	
 		} else {
 			if(isXML) {
-				callback();	
+				return callback(true);	
 			} else {
 				uploadFiles(pageData, true, callback);
 			}
 		}
+
+		callback(false);
 	});
 
 }
