@@ -35,7 +35,7 @@
     "dotenv": "^2.0.0",
     "node-babel": "^0.1.2",
     "sqs-consumer": "^3.2.0",
-    "uuid": "^2.0.2",
+    "uuid": "^2.0.3",
     "valid-url": "^1.0.9",
     "yargs": "^4.7.1"
   }

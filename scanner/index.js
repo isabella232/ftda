@@ -4,16 +4,14 @@ const dotenv = require('dotenv').config();
 
 const debug = require('debug')('scanner');
 const AWS = require('aws-sdk');
+const uuid = require('uuid').v4;
 
 const fs = require('fs');
 const tmpPath = process.env.TMPPATH || '/tmp';
 
 const tesseract = require('./lib/tesseract');
 const database = require('./lib/database-interface');
-
-AWS.config.update({
-  region: 'us-west-2'
-});
+const lettersDatabase = require('./lib/dynamo');
 
 const databaseConnectionDetails = {
 	host : process.env.DATABASE_HOST,
@@ -26,6 +24,11 @@ const S3 = new AWS.S3();
 
 let isProcessing = false;
 let currentJob;
+
+function catastrophicErrorHandler(err){
+	debug('Catastrophic error. Exiting process', err);
+	process.exit();
+}
 
 function getJobFromScanQueue(){
 	// Get item from queue and return it
@@ -163,20 +166,27 @@ function processJob(data){
 						} );
 
 						const lettersStorage = Promise.all( results.bounds.map( function( item ){
-							return Promise.resolve(item);
-						} ) );
+								item.uuid = uuid();
+								return lettersDatabase.write(item, 'ftlabs-ftda-letters');
+							}))
+							.catch(err => {
+								debug('An error occurred writing one or more boound results to the letters database', err);
+								return;
+							})
+						;
 
-						Promise.all([plainTextStorage, lettersStorage])
+						return Promise.all([plainTextStorage, lettersStorage])
 							.then(function(){
 								debug('All data stored successfully');
 								resolve();
 							})
 							.catch(function(err){
+								// Either the storage of the plain text failed
+								// or both the plaintext and the bounds results failed
+								// Shouldn't get here if only the bounds write fails.
 								debug('An error occurred trying to store the scan results', err);
 							})
 						;
-
-						// Send the data off to a database
 	
 					})
 					.catch(err => {
@@ -206,8 +216,15 @@ database.connect(databaseConnectionDetails)
 						if(job !== undefined){
 							processJob(job)
 								.then(function(){
-									isProcessing = false;
-									currentJob = undefined;
+									deleteJobFromScanQueue(currentJob.id)
+										.then(function(){
+											isProcessing = false;
+											currentJob = undefined;
+										})
+										.catch(function(err){
+											catastrophicErrorHandler(err)
+										})
+									;
 								})
 							;
 						}
@@ -228,8 +245,7 @@ database.connect(databaseConnectionDetails)
 					isProcessing = false;
 				})
 				.catch(function(err){
-					debug('Catastrophic error. Exiting process', err);
-					process.exit();
+					catastrophicErrorHandler(err)
 				})
 			;
 		}
