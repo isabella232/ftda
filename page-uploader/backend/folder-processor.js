@@ -18,6 +18,10 @@ function processFolderContents(folders, callback) {
 				throw err;
 			}
 
+			if(contents[0] === '.DS_Store') {
+				contents.shift();
+			}
+
 		  	fs.stat(folder + '/' + contents[0], (err, stats) => {
 		  		if (err) {
 		  			throw err;
