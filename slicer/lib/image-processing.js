@@ -10,16 +10,14 @@ console.log("PATH:", process.env['PATH']);
 process.env['PATH'] += `:${gmPaths.join(':')}`;
 console.log("ADJ PATH:", process.env['PATH']);*/
 
-var Promise = require('bluebird');
-var gm = require('gm');
-var path = require('path');
-var co = require('co');
-var tmp = require('tmp');
+const Promise = require('bluebird');
+const gm = require('gm');
+const co = require('co');
+const tmp = require('tmp');
 const random = require('uuid').v4;
 
-var fs = Promise.promisifyAll(require('fs'));
+const fs = Promise.promisifyAll(require('fs'));
 Promise.promisifyAll(gm.prototype);
-
 
 function append(image, append){
 	if (!image){
@@ -41,22 +39,22 @@ function crop(pic, pos){
 module.exports = {
 	process: co.wrap(function * (filePath, coordinates) {
 
-		var pic = filePath;
+		let pic = filePath;
 		console.log(pic);
-		var tempFiles = [];
-		for ( var i = 0; i < coordinates.length; i += 1 ) {
-			var bounds = coordinates[i];
+		let tempFiles = [];
+		for ( let i = 0; i < coordinates.length; i += 1 ) {
+			let bounds = coordinates[i];
 			console.log(bounds);
-			var cropped = crop(pic, bounds);
-			var tempFile = tmp.fileSync({
+			let cropped = crop(pic, bounds);
+			let tempFile = tmp.fileSync({
 				dir : '/tmp'
 			});
 			yield cropped.writeAsync(tempFile.name);
 			tempFiles.push(tempFile.name);
 		}
 
-		var image = gm(tempFiles[0]);
-		for (var i = 1 ; i < tempFiles.length ; i++){
+		let image = gm(tempFiles[0]);
+		for (let i = 1 ; i < tempFiles.length ; i++){
 			image.append(tempFiles[i]);
 		}
 

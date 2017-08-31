@@ -27,7 +27,7 @@ let isProcessing = false;
 
 function getJobFromSliceQueue(){
 	// Get item from queue and return it
-	return database.query('SELECT * FROM slice ORDER BY rand() LIMIT 1')
+	return database.query(`SELECT * FROM slice WHERE status = 'available' AND attempts < 3 ORDER BY rand() LIMIT 1`)
 		.then(function(data){
 			return data.results[0];
 		})
@@ -46,7 +46,7 @@ function deleteJobFromSliceQueue(id){
 }
 
 function resetJobInSliceQueue(job){
-	return database.query(`UPDATE slice SET status = 'available' WHERE id=${job.id}`);
+	return database.query(`UPDATE slice SET status = 'available', attempts = attempts + 1 WHERE id=${job.id}`);
 }
 
 function addJobToScanQueue(details){
@@ -154,6 +154,7 @@ function processAndSlice(data){
 			})
 			.catch(function(err){
 				debug('An error occurred proccessing one of the articles in the page', err);
+				resetJobInSliceQueue(currentJob);
 			})
 		;
 
@@ -195,6 +196,9 @@ database.connect(databaseConnectionDetails)
 					process.exit();
 				})
 			;
+		} else {
+			isProcessing = false;
+			currentJob = undefined;
 		}
 	})
 ;
