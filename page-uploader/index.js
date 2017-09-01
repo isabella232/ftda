@@ -38,8 +38,8 @@ app.on('activate', () => {
     }
 });
 
-function showSelectDialog(event, files, ignored) {
-    event.sender.send('files-exist', files, ignored);
+function showSelectDialog(event, files, ignored, invalid) {
+    event.sender.send('files-exist', files, ignored, invalid);
 }
 
 function showProgress(event, values) {
@@ -49,10 +49,10 @@ function showProgress(event, values) {
 ipcMain.on('show-dialog', event => {
     dialog.showOpenDialog(mainWindow, {properties: ['openDirectory', 'multiSelections']}, folders => {
         folderProcessor.reset();
-        folderProcessor.readFolders(folders, (files, ignored) => {
+        folderProcessor.readFolders(folders, (files, ignored, invalid) => {
             const existing = files;
-            if(existing.length > 0) {
-                showSelectDialog(event, existing, ignored);
+            if(existing.length > 0 || invalid.length > 0) {
+                showSelectDialog(event, existing, ignored, invalid);
             } else {
                 folderProcessor.upload(null, (progress, allDone) => {
                     showProgress(event, progress);

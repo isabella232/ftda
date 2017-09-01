@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron');
 const trigger = document.getElementById('trigger');
 const fileSubmit = document.getElementById('existingFiles');
+const proceed = document.getElementById('proceed');
 const progress = document.getElementById('progress');
 let currentFiles = null;
 
@@ -14,7 +15,10 @@ trigger.addEventListener('click', () => {
 	ipcRenderer.send('show-dialog');
 });
 
-fileSubmit.addEventListener('submit', e => {
+fileSubmit.addEventListener('submit', proceedWithUpload);
+proceed.addEventListener('click', proceedWithUpload);
+
+function proceedWithUpload(e) {
 	e.preventDefault();
 	
 	const filesToExclude = checkall.checked?null:checkExcludeFiles();
@@ -23,9 +27,10 @@ fileSubmit.addEventListener('submit', e => {
 
 	fileSubmit.querySelector('ul').remove();
 	fileSubmit.style.display = 'none';
+	proceed.style.display = 'none';
 	currentFiles = null;
 	progress.innerHTML = '';
-});
+}
 
 function checkExcludeFiles() {
 	const fileSelection = fileSubmit.querySelectorAll('.file');
@@ -41,12 +46,24 @@ function checkExcludeFiles() {
 }
 
 
-ipcRenderer.on('files-exist', (event, files, total) => {
+ipcRenderer.on('files-exist', (event, files, total, invalid) => {
 	const existingFiles = document.createElement('ul');
 	const submit = document.querySelector('#existingFiles input[type="submit"]');
 	const checkall = document.getElementById('checkall');
 	checkall.checked = true;
-	progress.textContent = `You have chosen ${total} files to upload, ${files.length} files already exist. Please select files to override before proceeding:`;
+	progress.innerHTML = `<p>You have chosen ${total + invalid.length} files to upload, ${files.length} files already exist.</p>`;
+	
+	if(invalid.length > 0) {
+		progress.innerHTML += `<p>${invalid.length} file${invalid.length > 1?'s':''} are invalid and will be ignored:<ul>`;
+		for(i in invalid) {
+			progress.innerHTML += `<li>${invalid[i]}</li>`;
+		}
+		progress.innerHTML += '</ul></p>';
+	}
+
+	if(files.length > 0) {
+		progress.innerHTML += `<p>Please select files to override before proceeding:</p>`;
+	}
 	currentFiles = files;
 
 	for(i in files) {
@@ -81,7 +98,11 @@ ipcRenderer.on('files-exist', (event, files, total) => {
 		existingFiles.appendChild(container);
 	}
 
-	fileSubmit.style.display = 'inherit';
+	if(files.length > 0) {
+		fileSubmit.style.display = 'inherit';
+	} else {
+		proceed.style.display = 'inherit';
+	}
 
 	checkall.addEventListener('click', e => {
 		const allChecked = e.target.checked;
@@ -102,8 +123,9 @@ ipcRenderer.on('upload-progress', (event, values) => {
 		progress.textContent = 'No issues to update';
 	} else {
 		progress.innerHTML = `<p>Uploaded: ${values.amount} issue${values.amount > 1?'s':''} out of ${values.total}; ${values.files} file${values.files > 1?'s':''} out of ${values.filesTotal}</p>`;
-		if(values.ignored !== null) {
-			progress.innerHTML += `<p>Ignored: ${values.ignored.length} file${values.ignored.length > 1?'s':''}</p>`;
+		if(values.ignored !== null || values.invalid.length > 0) {
+			const ignoredTotal = (values.ignored !== null)?values.ignored.length:0 + values.invalid.length;
+			progress.innerHTML += `<p>Ignored: ${ignoredTotal} file${ ignoredTotal > 1?'s':''}</p>`;
 		}
 	}
 });

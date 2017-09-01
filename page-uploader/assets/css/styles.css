@@ -37,15 +37,17 @@ body {
 }
 
 
-#existingFiles .file {
+#existingFiles .file, #proceed {
 	display: none;
+}
+
+#proceed {
+	margin: 20px 0 40px;	
 }
 
 #existingFiles input[type="submit"] {
 	float: right;
-	margin: 20px 0 40px;
 }
-
 
 #existingFiles .file + label {
 	display: inline-block;

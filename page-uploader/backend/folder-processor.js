@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const bucketUpload = require('./s3-upload.js');
 let filesToUpload = [];
+let invalidFiles = [];
 let trackFolders = 0;
 let processedFolders = 0;
 let processedFiles = 0;
@@ -51,11 +52,20 @@ function saveFolderData(folder, callback) {
 	fs.readdir(folder, (err, files) => {
 		files.forEach(file => {
 			if(path.extname(file) === '.xml') {
-				++filesTotal;
-				issueData.xml = folder + '/' + file;
+				if((/(FTDA)-[0-9]{4}-[0-9]+(.xml)/g).test(file)) {	
+					++filesTotal;
+					issueData.xml = folder + '/' + file;
+				} else {
+					invalidFiles.push(folder + '/' + file);
+				}
 			} else if(path.extname(file) === '.JPG'){
-				++filesTotal;
-				issueData.jpgs.push(folder + '/' + file);
+				if((/(FTDA)-[0-9]{4}-[0-9]+-[0-9]{4}(.JPG)/g).test(file)) {
+					++filesTotal;
+					issueData.jpgs.push(folder + '/' + file);
+				} else {
+					invalidFiles.push(folder + '/' + file);
+				}
+				
 			}
 		});
 
@@ -64,7 +74,7 @@ function saveFolderData(folder, callback) {
 
 		if (trackFolders === 0) {
 			bucketUpload.checkFiles(filesToUpload, files => {
-				callback(files, filesTotal);
+				callback(files, filesTotal, invalidFiles);
 			});
 		}
 	});
@@ -104,7 +114,7 @@ function uploadFiles(excludeFiles, callback) {
 					++processedFolders;
 				}
 
-				callback({amount: processedFolders, total: filesToUpload.length, files: processedFiles, filesTotal: filesTotal, ignored: excludeFiles}, (processedFolders === filesToUpload.length));
+				callback({amount: processedFolders, total: filesToUpload.length, files: processedFiles, filesTotal: filesTotal, ignored: excludeFiles, invalid: invalidFiles}, (processedFolders === filesToUpload.length));
 			});
 		}
 	} else {
@@ -118,6 +128,7 @@ function resetFileUpload() {
 	processedFolders = 0;
 	trackFolders = 0;
 	filesToUpload = [];
+	invalidFiles = [];
 }
 
 module.exports = {
