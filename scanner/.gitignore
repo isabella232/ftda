@@ -1,0 +1,7 @@
+.aws-env
+.env
+deploy.env
+event.json
+.DS_Store
+node_modules
+bin/s3
