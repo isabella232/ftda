@@ -47,6 +47,7 @@ body {
 
 #existingFiles input[type="submit"] {
 	float: right;
+	margin: 20px 0 40px;
 }
 
 #existingFiles .file + label {

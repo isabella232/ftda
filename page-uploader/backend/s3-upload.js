@@ -41,15 +41,35 @@ function checkFiles(archiveData, callback) {
 				if (!err) {
 					resolve(fileObject);
 				} else {
-					resolve(null);
+					// console.log('checkfile', err);
+					if(err.statusCode === 404) {
+						resolve(null);	
+					} else {
+						reject(err);
+					}
 				}
 			});
 		});
 	});
 
-	Promise.all(filesFound).then(data => callback(data.filter(item => {
+	Promise.all(filesFound)
+	.then(data => callback(data.filter(item => {
 		return item !== null;
-	})));
+	})))
+	.catch(err => {
+		let errorMessage;
+
+		switch(err.statusCode) {
+			case 403:
+				errorMessage = 'You must be on the internal network at OSB to upload files';
+			break;
+
+			default:
+				errorMessage = 'There was an error processing the files, please contact the administrator, quoting the following message: ' + err.code;
+		}
+		
+		callback({'error': errorMessage});
+	});
 }
 
 
@@ -74,7 +94,7 @@ function uploadFiles(pageData, isXML, callback) {
 
 	const uploader = client.uploadFile(params);
 	uploader.on('error', function(err) {
-		console.error("unable to upload:", err.stack);
+		console.error("unable to upload:", err);
 	});
 
 	uploader.on('progress', function() {

@@ -12,6 +12,7 @@ trigger.addEventListener('click', () => {
 	}
 
 	progress.innerHTML = '';
+	trigger.disabled = true;
 	ipcRenderer.send('show-dialog');
 });
 
@@ -30,11 +31,13 @@ function proceedWithUpload(e) {
 	proceed.style.display = 'none';
 	currentFiles = null;
 	progress.innerHTML = '';
+	trigger.disabled = true;
 }
 
 function checkExcludeFiles() {
 	const fileSelection = fileSubmit.querySelectorAll('.file');
 	const excludeFiles = [];
+	trigger.disabled = false;
 
 	Array.from(fileSelection).forEach(file => {
 		if(!file.checked) {
@@ -118,7 +121,7 @@ ipcRenderer.on('files-exist', (event, files, total, invalid) => {
 	fileSubmit.insertBefore(existingFiles, submit);
 });
 
-ipcRenderer.on('upload-progress', (event, values) => {
+ipcRenderer.on('upload-progress', (event, values, done) => {
 	if(values === null) {
 		progress.textContent = 'No issues to update';
 	} else {
@@ -128,4 +131,14 @@ ipcRenderer.on('upload-progress', (event, values) => {
 			progress.innerHTML += `<p>Ignored: ${ignoredTotal} file${ ignoredTotal > 1?'s':''}</p>`;
 		}
 	}
+
+	if(done) {
+		progress.innerHTML += `Upload done.`
+		trigger.disabled = false;
+	}
+});
+
+ipcRenderer.on('error', (event, message) => {
+	alert(message);
+	trigger.disabled = false;
 });

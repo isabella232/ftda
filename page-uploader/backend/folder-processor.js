@@ -74,7 +74,11 @@ function saveFolderData(folder, callback) {
 
 		if (trackFolders === 0) {
 			bucketUpload.checkFiles(filesToUpload, files => {
-				callback(files, filesTotal, invalidFiles);
+				if(files.error) {
+					callback(files, null, null);
+				} else {
+					callback(files, filesTotal, invalidFiles);	
+				}
 			});
 		}
 	});
