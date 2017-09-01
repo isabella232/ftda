@@ -80,31 +80,37 @@ function lambda( event, context, callback, local ){
 		
 				co(function * (){
 					const data = yield xmlParser.run(destination);
-		
+					console.log('PAGES:', data.pages);
 					data.pages.forEach(page => {
-						console.log("This page has", page.articles.length, 'articles');
-						const pageID = page.id;
-						const articlesToSliceOnPage = [];
-		
-						page.articles.forEach(article => {
-		
-							debug(article);
-		
-							if(article.text){
-		
-								articlesToSliceOnPage.push({
-									id : xmlParser.unwrap(article.id),
-									coordinates : xmlParser.unwrap(article.text)['text.cr'].map(t => {
-										return xmlParser.coordinates(t);
-									})
-								});
-		
-							}
-		
-						});
 
-						const insertQuery = `INSERT INTO slice (\`status\`, \`page-uuid\`, \`slices\`) VALUES ("available", "${pageID}", '${ JSON.stringify( articlesToSliceOnPage ) }');`;
-						databaseWrites.push( database.query( insertQuery ) )
+						if(page.articles !== undefined){
+
+							console.log("This page has", page.articles.length, 'articles');
+							const pageID = page.id;
+							const articlesToSliceOnPage = [];
+			
+							page.articles.forEach(article => {
+			
+								debug(article);
+			
+								if(article.text){
+			
+									articlesToSliceOnPage.push({
+										id : xmlParser.unwrap(article.id),
+										coordinates : xmlParser.unwrap(article.text)['text.cr'].map(t => {
+											return xmlParser.coordinates(t);
+										})
+									});
+			
+								}
+			
+							});
+	
+							const insertQuery = `INSERT INTO slice (\`status\`, \`page-uuid\`, \`slices\`) VALUES ("available", "${pageID}", '${ JSON.stringify( articlesToSliceOnPage ) }');`;
+							databaseWrites.push( database.query( insertQuery ) );
+
+						}
+
 				
 					})
 		

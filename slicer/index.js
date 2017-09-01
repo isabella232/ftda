@@ -11,10 +11,11 @@ const imageProcessing = require('./lib/image-processing');
 const database = require('./lib/database-interface');
 
 const databaseConnectionDetails = {
-	host : process.env.SLICE_DATABASE_HOST,
-	user : process.env.SLICE_DATABASE_USERNAME,
-	password : process.env.SLICE_DATABASE_PASSWORD,
-	port : process.env.SLICE_DATABASE_PORT
+	host : process.env.DATABASE_HOST,
+	user : process.env.DATABASE_USERNAME,
+	password : process.env.DATABASE_PASSWORD,
+	port : process.env.DATABASE_PORT,
+	database : process.env.MYSQL_DATABASE
 };
 
 const tmpPath = process.env.TMPPATH || '/tmp/';
@@ -32,17 +33,25 @@ function getJobFromSliceQueue(){
 			return data.results[0];
 		})
 		.then(function(job){
-			return database.query(`UPDATE slice SET status = 'processing' WHERE id=${job.id}`)
-				.then(function(){
-					return job;
-				})
+
+			if(job !== undefined){
+
+				return database.query(`UPDATE slice SET status = 'processing' WHERE id=${job.id}`)
+					.then(function(){
+						return job;
+					})
+				;
+			} else {
+				return job;
+			}
+
 		})
 	;
 }
 
 function deleteJobFromSliceQueue(id){
 	// Delete job from slice queue when it's been completed
-	return database.query(`DELETE * FROM slice WHERE id = ${id}`);
+	return database.query(`DELETE FROM slice WHERE id = ${id}`);
 }
 
 function resetJobInSliceQueue(job){
@@ -202,3 +211,6 @@ database.connect(databaseConnectionDetails)
 		}
 	})
 ;
+
+
+// process.stdin.resume();
