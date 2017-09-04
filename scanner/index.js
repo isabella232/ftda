@@ -1,6 +1,6 @@
 require('node-babel')();
 
-const dotenv = require('dotenv').config();
+require('dotenv').config();
 
 const debug = require('debug')('scanner');
 const AWS = require('aws-sdk');
@@ -21,6 +21,8 @@ const databaseConnectionDetails = {
 };
 
 const S3 = new AWS.S3();
+
+const DATABASE_QUERY_INTERVAL = parseInt(process.env.DATABASE_QUERY_INTERVAL) || 1000;
 
 let isProcessing = false;
 let currentJob;
@@ -127,7 +129,6 @@ function processJob(data){
 	
 			file.on('error', function(err){
 				debug('Error writing file', err);
-				debug(err);
 				reject(err)
 			});
 	
@@ -233,7 +234,7 @@ database.connect(databaseConnectionDetails)
 				;
 			}
 		
-		}, 1000);
+		}, DATABASE_QUERY_INTERVAL);
 
 	})
 	.catch(function(err){
