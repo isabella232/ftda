@@ -9,14 +9,16 @@ let processedFiles = 0;
 let filesTotal = 0;
 
 function processFolderContents(folders, callback) {
-	if (folders === undefined) return;
+	if (folders === undefined) {
+		return;
+	}
 
 	folders.forEach(folder => {
 		++trackFolders;
 
 		fs.readdir(folder, (err, contents) => {
 			if(err) {
-				throw err;
+				return callback({'error': err.message}, null, null);
 			}
 
 			if(contents[0] === '.DS_Store') {
@@ -25,7 +27,7 @@ function processFolderContents(folders, callback) {
 
 		  	fs.stat(folder + '/' + contents[0], (err, stats) => {
 		  		if (err) {
-		  			throw err;
+		  			return callback({'error': err.message}, null, null);
 		  		}
 
 		  		if (stats.isDirectory()) {

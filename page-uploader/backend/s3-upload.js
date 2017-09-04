@@ -29,7 +29,7 @@ function checkFiles(archiveData, callback) {
 	}
 
 
-	const filesFound = Array.from(files).map((fileObject, i) => {
+	const filesFound = Array.from(files).map(fileObject => {
 		const path = fileObject.path;
 		const file = fileObject.file.split('/').pop();
 
