@@ -54,14 +54,14 @@ function saveFolderData(folder, callback) {
 	fs.readdir(folder, (err, files) => {
 		files.forEach(file => {
 			if(path.extname(file) === '.xml') {
-				if((/(FTDA)-[0-9]{4}-[0-9]+(.xml)/g).test(file)) {	
+				if((/(FTDA)-[0-9]{4}-[0-9]{4}(.xml)/g).test(file)) {	
 					++filesTotal;
 					issueData.xml = folder + '/' + file;
 				} else {
 					invalidFiles.push(folder + '/' + file);
 				}
 			} else if(path.extname(file) === '.JPG'){
-				if((/(FTDA)-[0-9]{4}-[0-9]+-[0-9]{4}(.JPG)/g).test(file)) {
+				if((/(FTDA)-[0-9]{4}-[0-9]{4}-[0-9]{4}(.JPG)/g).test(file)) {
 					++filesTotal;
 					issueData.jpgs.push(folder + '/' + file);
 				} else {
