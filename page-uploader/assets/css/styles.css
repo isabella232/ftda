@@ -1,0 +1,94 @@
+body {
+	background: #FFF1E5;
+	font-family: MetricWeb, sans-serif;
+}
+
+#trigger {
+	width: 100%;
+}
+
+#progress {
+	margin: 20px 0;
+	padding: 0 5px;
+}
+
+#existingFiles {
+    display: none;
+    margin-bottom: 40px;
+    background-color: white;
+    padding: 10px;
+}
+
+#existingFiles ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+	background: #CCC1B7;
+	display: block;
+	max-height: 280px;
+	width: 100%;
+	overflow-y: scroll;
+	border: 1px solid #CCC1B7;
+	border-bottom: none;
+}
+
+#existingFiles ul li:last-child label {
+	margin-bottom: 0!important;
+}
+
+
+#existingFiles .file, #proceed {
+	display: none;
+}
+
+#proceed {
+	margin: 20px 0 40px;	
+}
+
+#existingFiles input[type="submit"] {
+	float: right;
+	margin: 20px 0 40px;
+}
+
+#existingFiles .file + label {
+	display: inline-block;
+	width: 100%;
+	border-bottom: 1px solid #CCC1B7;
+	line-height: 1.5;
+	cursor: pointer;
+	padding: 0 5px;
+	vertical-align: middle;
+	background-color: white;
+}
+
+#existingFiles .file:checked + label {
+	background-color: #0D7680;
+	color: white;
+}
+
+#existingFiles .file:checked:disabled + label {
+	background-color: #12A5B3;
+	cursor: default;
+	margin-bottom: 5px;
+}
+
+#existingFiles .file + label:before {
+	content: '';
+	width: 10px;
+	height: 30px;
+	display: inline-block;
+	margin-right: 10px;	
+	vertical-align: middle;
+}
+
+#existingFiles .file:checked + label:before {
+	background-image: url('https://www.ft.com/__origami/service/image/v2/images/raw/fticon:tick?width=20&format=png&tint=ffffff&source=ftlabs');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: 50%;
+	vertical-align: middle;
+}
+
+.o-forms {
+	max-width: none;
+}
