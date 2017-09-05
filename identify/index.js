@@ -132,7 +132,7 @@ function lambda( event, context, callback, local ){
 			});
 		})
 		.catch(function(err){
-			debug('Err:', err);
+			console.log('Err:', err);
 		})
 	;
 
