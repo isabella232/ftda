@@ -3,10 +3,13 @@ const { app } = electron;
 const { BrowserWindow } = electron;
 const { ipcMain } = electron;
 const { dialog } = electron;
+const { shell } = electron;
 const path = require('path');
 const url = require('url');
+const { paste } = require('copy-paste');
 
 const folderProcessor = require('./backend/folder-processor.js');
+const KEYS = require('./keys.js');
 
 let mainWindow;
 
@@ -46,16 +49,21 @@ function showProgress(event, values, done) {
     event.sender.send('upload-progress', values, done);
 }
 
-function showError(event, message) {
-    event.sender.send('error', message);
+function showError(event, error) {
+    event.sender.send('error', error.error, error.code);
 }
 
 ipcMain.on('show-dialog', event => {
     dialog.showOpenDialog(mainWindow, {properties: ['openDirectory', 'multiSelections']}, folders => {
+        if(folders === undefined) {
+            event.sender.send('reset-select');
+            return;
+        }
+
         folderProcessor.reset();
         folderProcessor.readFolders(folders, (files, ignored, invalid) => {
             if(files.error) {
-               return showError(event, files.error);
+               return showError(event, files);
             }
 
             const existing = files;
@@ -84,4 +92,20 @@ ipcMain.on('exclude-files', (event, files) => {
             folderProcessor.reset();
         }
     });
+});
+
+ipcMain.on('get-keys', event => {
+    shell.openExternal(process.env.KEY_FETCH_URL);
+});
+
+ipcMain.on('set-keys', (event, data) => {
+    if(data !== null) {
+        KEYS.set(JSON.parse(data));
+    } else {
+        paste((err, data) => {
+            const keys = JSON.parse(data);
+            KEYS.set(keys);
+            event.sender.send('save-keys', data);
+        });
+    }
 });

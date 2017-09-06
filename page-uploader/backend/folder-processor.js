@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const bucketUpload = require('./s3-upload.js');
+let bucketUpload = require('./s3-upload.js');
 let filesToUpload = [];
 let invalidFiles = [];
 let trackFolders = 0;
@@ -12,6 +12,8 @@ function processFolderContents(folders, callback) {
 	if (folders === undefined) {
 		return;
 	}
+
+	bucketUpload.setClient();
 
 	folders.forEach(folder => {
 		++trackFolders;

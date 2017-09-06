@@ -3,7 +3,12 @@ body {
 	font-family: MetricWeb, sans-serif;
 }
 
+#auth {
+	display: none;
+}
+
 #trigger {
+	display: none;
 	width: 100%;
 }
 
