@@ -147,7 +147,7 @@ function processAndSlice(data){
 					})
 					.catch(err => {
 						console.log("ERR in image processing:", err);
-
+						throw err;
 					})
 				;
 
