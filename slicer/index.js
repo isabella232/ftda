@@ -54,6 +54,7 @@ function deleteJobFromSliceQueue(id){
 }
 
 function resetJobInSliceQueue(job){
+	console.log('Job reset', job);
 	return database.query(`UPDATE slice SET status = 'available', attempts = attempts + 1 WHERE id=${job.id}`);
 }
 
