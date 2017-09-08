@@ -165,7 +165,11 @@ function processAndSlice(data){
 			})
 			.catch(function(err){
 				console.log('An error occurred proccessing one of the articles in the page', err);
-				resetJobInSliceQueue(currentJob);
+				resetJobInSliceQueue(currentJob)
+					.then(function(){
+						isProcessing = false;
+					})
+				;
 			})
 		;
 
