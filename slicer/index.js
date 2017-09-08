@@ -115,6 +115,8 @@ function processAndSlice(data){
 						fs.readFile(img.path, (err, file) => {
 							if(err){
 								console.log("Error reading spliced image:", err);
+								reject(err);
+								return;
 							} else {
 								console.log("Spliced image read from disk:", img.path);
 		
@@ -145,6 +147,10 @@ function processAndSlice(data){
 		
 						});
 		
+					})
+					.catch(function(err){
+						console.log('Image processesing error');
+						reject(err);
 					})
 				;
 
