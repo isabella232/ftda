@@ -60,7 +60,11 @@ module.exports = {
 
 		const finalName = random();
 		const stitchOutputPath = `/tmp/${finalName}.jpg`;
-		yield image.writeAsync(stitchOutputPath);
+		try {
+			yield image.writeAsync(stitchOutputPath);
+		} catch(err){
+			throw err;
+		}
 		console.log("We've been stitched up at:", stitchOutputPath);
 		tempFiles.forEach(t => { 
 			fs.unlinkSync(t);
