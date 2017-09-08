@@ -93,9 +93,11 @@ function processAndSlice(data){
 	file.on('error', function(e){
 		console.log("error event");
 		console.log(e);
+		file.end();
 	});
 
 	file.on('close', function(e){
+		file.end();
 		console.log(`File recieved from S3 and written to ${parentPageDestination}`);
 
 		const articlesToProcess = articleSections.map(function(article){
