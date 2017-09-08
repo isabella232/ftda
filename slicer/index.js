@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const debug = require('debug')('slicer');
 const fs = require('fs');
 const co = require('co');
 const dotenv = require('dotenv').config();
@@ -134,7 +133,7 @@ function processAndSlice(data){
 											resolve(true);
 										})
 										.catch(function(err){
-											debug('An error occurred adding a job to the queue', err);
+											console.log('An error occurred adding a job to the queue', err);
 											reject(data);
 										})
 									;
@@ -147,7 +146,7 @@ function processAndSlice(data){
 		
 					})
 					.catch(err => {
-						console.log("ERR:", err);
+						console.log("ERR in image processing:", err);
 
 					})
 				;
@@ -162,7 +161,7 @@ function processAndSlice(data){
 				isProcessing = false;
 			})
 			.catch(function(err){
-				debug('An error occurred proccessing one of the articles in the page', err);
+				console.log('An error occurred proccessing one of the articles in the page', err);
 				resetJobInSliceQueue(currentJob);
 			})
 		;
@@ -193,7 +192,7 @@ database.connect(databaseConnectionDetails)
 
 	})
 	.catch(function(err){
-		debug('Top level error', err);
+		console.log('Top level error', err);
 		if(currentJob){
 			resetJobInSliceQueue(currentJob)
 				.then(function(){
