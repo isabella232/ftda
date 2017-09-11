@@ -19,13 +19,6 @@ const random = require('uuid').v4;
 const fs = Promise.promisifyAll(require('fs'));
 Promise.promisifyAll(gm.prototype);
 
-function append(image, append){
-	if (!image){
-		return gm(append);
-	}
-	return image.append(to);
-}
-
 function crop(pic, pos){
 	console.log("CROP:", pic);
 	return gm(pic).crop(
@@ -39,21 +32,21 @@ function crop(pic, pos){
 module.exports = {
 	process: co.wrap(function * (filePath, coordinates) {
 
-		let pic = filePath;
+		const pic = filePath;
 		console.log(pic);
-		let tempFiles = [];
+		const tempFiles = [];
 		for ( let i = 0; i < coordinates.length; i += 1 ) {
-			let bounds = coordinates[i];
+			const bounds = coordinates[i];
 			console.log(bounds);
-			let cropped = crop(pic, bounds);
-			let tempFile = tmp.fileSync({
+			const cropped = crop(pic, bounds);
+			const tempFile = tmp.fileSync({
 				dir : '/tmp'
 			});
 			yield cropped.writeAsync(tempFile.name);
 			tempFiles.push(tempFile.name);
 		}
 
-		let image = gm(tempFiles[0]);
+		const image = gm(tempFiles[0]);
 		for (let i = 1 ; i < tempFiles.length ; i++){
 			image.append(tempFiles[i]);
 		}
