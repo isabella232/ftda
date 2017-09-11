@@ -91,7 +91,7 @@ ipcMain.on('exclude-files', (event, files) => {
 });
 
 ipcMain.on('get-keys', event => {
-    shell.openExternal(process.env.KEY_FETCH_URL);
+    shell.openExternal(KEYS.KEY_FETCH_URL);
 });
 
 ipcMain.on('set-keys', (event, data) => {

@@ -52,7 +52,7 @@ function proceedWithUpload(e) {
 	fileSubmit.style.display = 'none';
 	proceed.style.display = 'none';
 	currentFiles = null;
-	progress.innerHTML = '';
+	progress.innerHTML = 'Preparing...';
 	trigger.disabled = true;
 }
 

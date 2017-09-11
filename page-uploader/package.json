@@ -2,10 +2,20 @@
   "name": "page-uploader",
   "version": "1.0.0",
   "description": "Upload FTDA data to S3",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dist": "build -m --x64"
+  },
+  "build": {
+    "appId": "com.ftlabs.ftdauploader",
+    "copyright": "Copyright © 2017 FTLabs",
+    "productName": "FTDA Page Uploader",
+    "electronVersion": "1.7.5",
+    "mac": {
+      "category": "public.utility.ftda"
+    }
   },
   "repository": {
     "type": "git",
@@ -14,7 +24,8 @@
   "author": "Sean M. Tracey & Lily Madar",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^1.7.5"
+    "electron": "^1.7.5",
+    "electron-builder": "^19.27.7"
   },
   "dependencies": {
     "@monolambda/s3": "^1.0.2",
