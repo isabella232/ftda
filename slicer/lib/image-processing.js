@@ -30,40 +30,72 @@ function crop(pic, pos){
 }
 
 module.exports = {
-	process: co.wrap(function * (filePath, coordinates) {
+	process : function(filePath, coordinates){
+		console.log('Processing image:',filePath, coordinates);
+		return new Promise(function(resolve){
 
-		const pic = filePath;
-		console.log(pic);
-		const tempFiles = [];
-		for ( let i = 0; i < coordinates.length; i += 1 ) {
-			const bounds = coordinates[i];
-			console.log(bounds);
-			const cropped = crop(pic, bounds);
-			const tempFile = tmp.fileSync({
-				dir : '/tmp'
+			const pic = filePath;
+			
+			console.log('Mapping over coordinates...');
+			const tempFiles = coordinates.map(function(coords){
+				console.log(coords);
+				const bounds = coords;
+				const cropped = crop(pic, bounds);
+				const tempFile = tmp.fileSync({
+					dir : '/tmp'
+				});
+
+				console.log('Returning temporary file:', tempFile.name);
+				return cropped.writeAsync(tempFile.name);
+
 			});
-			yield cropped.writeAsync(tempFile.name);
-			tempFiles.push(tempFile.name);
-		}
 
-		const image = gm(tempFiles[0]);
-		for (let i = 1 ; i < tempFiles.length ; i++){
-			image.append(tempFiles[i]);
-		}
+			return Promise.all(tempFiles)
+				.then(function(files){
 
-		const finalName = random();
-		const stitchOutputPath = `/tmp/${finalName}.jpg`;
-		try {
-			yield image.writeAsync(stitchOutputPath);
-		} catch(err){
-			throw err;
-		}
-		console.log("We've been stitched up at:", stitchOutputPath);
-		tempFiles.forEach(t => { 
-			fs.unlinkSync(t);
+					console.log('Temporary files all generated. Appending now...');
+
+					const image = gm(files.shift());
+
+					console.log('Origin image:', image);
+
+					console.log('Iterating over additional images and appending to original image...');
+					files.forEach(function(additionalImage){
+						console.log(additionalImage);
+						image.append(additionalImage);
+					});
+
+					const finalName = random();
+					const stitchOutputPath = `/tmp/${finalName}.jpg`;
+
+					console.log('Creating write destination:', stitchOutputPath);
+
+					return image.writeAsync(stitchOutputPath)
+						.then(function(){
+							console.log('Image written to:', stitchOutputPath);
+							return stitchOutputPath;
+						})
+
+				})
+				.then(function(imagePath){
+					console.log('Final output path is:', imagePath);
+
+					console.log('Unlinking temporary files...');
+					tempFiles.forEach(function(t){
+						console.log('Unlinking:', t);
+						fs.unlinkSync(t);
+					});
+
+					console.log('Resolving original Promise');
+
+					resolve({
+						path : imagePath
+					});
+
+				})
+			;
+
 		});
-		return {
-			path : stitchOutputPath
-		};
-	})
-};
+
+	}
+}
