@@ -13,6 +13,8 @@ function processFolderContents(folders, callback) {
 		return;
 	}
 
+	bucketUpload.setClient();
+
 	folders.forEach(folder => {
 		++trackFolders;
 

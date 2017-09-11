@@ -1,20 +1,23 @@
 require('dotenv').config();
 const s3 = require('@monolambda/s3');
+const KEYS = require('./../keys.js');
 
-//TODO: handle errors
+let client; 
 
-const client = s3.createClient({
-	maxAsyncS3: 20,
-	s3RetryCount: 3,
-	s3RetryDelay: 1000,
-	multipartUploadThreshold: 20971520,
-	multipartUploadSize: 15728640,
-	s3Options: {
-		accessKeyId: process.env.AWS_KEY,
-		secretAccessKey: process.env.AWS_SECRET,
-		region: process.env.AWS_REGION
-	}
-});
+function setClient() {
+	client = s3.createClient({
+		maxAsyncS3: 20,
+		s3RetryCount: 3,
+		s3RetryDelay: 1000,
+		multipartUploadThreshold: 20971520,
+		multipartUploadSize: 15728640,
+		s3Options: {
+			accessKeyId: KEYS.key(),
+			secretAccessKey: KEYS.secret(),
+			region: process.env.AWS_REGION
+		}
+	});
+}
 
 function checkFiles(archiveData, callback) {
 	const files = [];
@@ -59,16 +62,21 @@ function checkFiles(archiveData, callback) {
 	.catch(err => {
 		let errorMessage;
 
-		switch(err.statusCode) {
-			case 403:
+		switch(err.code) {
+			case 'AccessDenied':
+			case 'Forbidden':
 				errorMessage = 'You must be on the internal network at OSB to upload files';
+			break;
+
+			case 'CredentialsError':
+				errorMessage = 'You have invalid credentials, please authenticate again.';
 			break;
 
 			default:
 				errorMessage = 'There was an error processing the files, please contact the administrator, quoting the following message: ' + err.code;
 		}
 		
-		callback({'error': errorMessage});
+		callback({'error': errorMessage, 'code': err.code});
 	});
 }
 
@@ -120,5 +128,6 @@ function uploadFiles(pageData, isXML, callback) {
 
 module.exports = {
 	checkFiles: checkFiles,
-	uploadFiles: uploadFiles
+	uploadFiles: uploadFiles,
+	setClient: setClient
 }

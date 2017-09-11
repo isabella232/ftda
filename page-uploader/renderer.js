@@ -1,9 +1,29 @@
 const { ipcRenderer } = require('electron');
+const auth = document.getElementById('auth');
 const trigger = document.getElementById('trigger');
 const fileSubmit = document.getElementById('existingFiles');
 const proceed = document.getElementById('proceed');
 const progress = document.getElementById('progress');
 let currentFiles = null;
+
+const keys = window.localStorage.getItem('hasKeys');
+
+if(keys === null) {
+	ipcRenderer.send('get-keys');
+	setTimeout(() => {
+		auth.style.display = 'inherit';
+	}, 200);
+} else {
+	ipcRenderer.send('set-keys', keys);
+	progress.innerHTML = '';
+	auth.style.display = 'none';
+	trigger.style.display = 'inherit';
+}
+
+auth.addEventListener('click', () => {
+	ipcRenderer.send('set-keys', null);
+	auth.style.display = 'none';
+})
 
 trigger.addEventListener('click', () => {
 	let fileList = document.querySelector('#existingFiles ul');
@@ -12,6 +32,8 @@ trigger.addEventListener('click', () => {
 	}
 
 	progress.innerHTML = '';
+	fileSubmit.style.display = 'none';
+	proceed.style.display = 'none';
 	trigger.disabled = true;
 	ipcRenderer.send('show-dialog');
 });
@@ -48,12 +70,16 @@ function checkExcludeFiles() {
 	return (excludeFiles.length > 0)?excludeFiles:null;
 }
 
+ipcRenderer.on('reset-select', event => {
+	trigger.disabled = false;
+});
 
 ipcRenderer.on('files-exist', (event, files, total, invalid) => {
 	const existingFiles = document.createElement('ul');
 	const submit = document.querySelector('#existingFiles input[type="submit"]');
 	const checkall = document.getElementById('checkall');
 	checkall.checked = true;
+	trigger.disabled = false;
 	progress.innerHTML = `<p>You have chosen ${total + invalid.length} files to upload, ${files.length} files already exist.</p>`;
 	
 	if(invalid.length > 0) {
@@ -138,7 +164,26 @@ ipcRenderer.on('upload-progress', (event, values, done) => {
 	}
 });
 
-ipcRenderer.on('error', (event, message) => {
+ipcRenderer.on('error', (event, message, code) => {
 	alert(message);
 	trigger.disabled = false;
+
+	if(code === 'CredentialsError') {
+		window.localStorage.removeItem('hasKeys');
+		progress.innerHTML = 'Authentication Required';
+		trigger.style.display = 'none';
+		fileSubmit.display = 'none';
+
+		ipcRenderer.send('get-keys');
+		setTimeout(() => {
+			auth.style.display = 'inherit';
+		}, 200);
+	}
 });
+
+ipcRenderer.on('save-keys', (event, keys) =>{
+	window.localStorage.setItem('hasKeys', keys);
+	progress.innerHTML = '';
+	auth.style.display = 'none';
+	trigger.style.display = 'inherit';
+})
