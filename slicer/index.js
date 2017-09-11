@@ -63,6 +63,22 @@ function addJobToScanQueue(details){
 	return database.query(`INSERT INTO scan (\`status\`, \`page-uuid\`, \`article-uuid\`, \`model-type\`) VALUES ("available", "${ details.parentID }", "${ details.articleID }", "default");`);
 }
 
+function deleteFileFromSystem(path){
+
+	return new Promise( (resolve, reject) => {
+
+		fs.unlink(path, function(err){
+			if(err){
+				reject(err);
+			} else {
+				resolve();
+			}
+		});
+
+	});
+
+}
+
 function processAndSlice(data){
 
 	isProcessing = true;
@@ -132,7 +148,11 @@ function processAndSlice(data){
 		
 									addJobToScanQueue( { parentID : parentPageID, articleID : article.id } )
 										.then(function(){
-											return deleteJobFromSliceQueue(data.id);
+											return deleteJobFromSliceQueue(data.id)
+												.then(function(){
+													return deleteFileFromSystem(img.path);
+												})
+											;
 										})
 										.then(function(){
 											resolve(true);
