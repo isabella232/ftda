@@ -44,7 +44,7 @@ module.exports = {
 				const tempFile = tmp.fileSync({
 					dir : '/tmp'
 				});
-
+				debug('cropped:', cropped);
 				debug('Returning temporary file:', tempFile.name);
 				return cropped.writeAsync(tempFile.name)
 					.then(function(){
