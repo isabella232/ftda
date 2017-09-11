@@ -46,14 +46,18 @@ module.exports = {
 				});
 
 				console.log('Returning temporary file:', tempFile.name);
-				return cropped.writeAsync(tempFile.name);
+				return cropped.writeAsync(tempFile.name)
+					.then(function(){
+						return tempFile.name;
+					})
+				;
 
 			});
 
 			return Promise.all(tempFiles)
 				.then(function(files){
 
-					console.log('Temporary files all generated. Appending now...');
+					console.log('Temporary files all generated. Appending now...', files);
 
 					const image = gm(files.shift());
 
@@ -73,15 +77,18 @@ module.exports = {
 					return image.writeAsync(stitchOutputPath)
 						.then(function(){
 							console.log('Image written to:', stitchOutputPath);
-							return stitchOutputPath;
+							return {
+								imagePath : stitchOutputPath,
+								tempFiles : files
+							};
 						})
 
 				})
-				.then(function(imagePath){
-					console.log('Final output path is:', imagePath);
+				.then(function(data){
+					console.log('Final output path is:', data.imagePath);
 
 					console.log('Unlinking temporary files...');
-					tempFiles.forEach(function(t){
+					data.tempFiles.forEach(function(t){
 						console.log('Unlinking:', t);
 						fs.unlinkSync(t);
 					});
@@ -89,7 +96,7 @@ module.exports = {
 					console.log('Resolving original Promise');
 
 					resolve({
-						path : imagePath
+						path : data.imagePath
 					});
 
 				})
