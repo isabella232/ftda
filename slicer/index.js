@@ -79,6 +79,24 @@ function deleteFileFromSystem(path){
 
 }
 
+function getListOfFilesInDirectory(directoryPath){
+
+	return new Promise( (resolve, reject) => {
+
+		fs.readdir(directoryPath, (err, files) => {
+
+			if(err){
+				reject(err);
+			} else {
+				resolve(files);
+			}
+
+		});
+
+	});
+
+}
+
 function processAndSlice(data){
 
 	isProcessing = true;
@@ -188,6 +206,23 @@ function processAndSlice(data){
 			.catch(function(err){
 				console.log('An error occurred proccessing one of the articles in the page', err);
 				resetJobInSliceQueue(currentJob)
+					.then(function(){
+						return getListOfFilesInDirectory('/tmp')
+							.then(function(files){
+
+								const cleanUp = files.filter(file => {
+										return file.indexOf('tmp-') > -1;
+									})
+									.map(file => {
+										return deleteFileFromSystem(file);
+									})
+								;
+
+								return Promise.all(cleanUp);
+
+							})
+						;
+					})
 					.then(function(){
 						isProcessing = false;
 					})
