@@ -99,9 +99,13 @@ ipcMain.on('set-keys', (event, data) => {
         KEYS.set(JSON.parse(data));
     } else {
         paste((err, data) => {
-            const keys = JSON.parse(data);
-            KEYS.set(keys);
-            event.sender.send('save-keys', data);
+            try {
+                const keys = JSON.parse(data);
+                KEYS.set(keys);
+                event.sender.send('save-keys', data);  
+            } catch(e) {
+                showError(event, {error: 'You must copy the keys from your browser before you continue', code: 'BadJSON'});
+            }            
         });
     }
 });

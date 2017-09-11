@@ -178,6 +178,8 @@ ipcRenderer.on('error', (event, message, code) => {
 		setTimeout(() => {
 			auth.style.display = 'inherit';
 		}, 200);
+	} else if(code === 'BadJSON') {
+		auth.style.display = 'inherit';
 	}
 });
 
