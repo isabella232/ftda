@@ -50,15 +50,11 @@ module.exports = {
 					.then(function(){
 						return tempFile.name;
 					})
-					.catch(function(err){
-						debug('An error occurred writing to the temporary files', err);
-						reject(err);
-					})
 				;
 
 			});
 
-			return Promise.all(tempFiles)
+			Promise.all(tempFiles)
 				.then(function(files){
 
 					debug('Temporary files all generated. Appending now...', files);
@@ -103,6 +99,10 @@ module.exports = {
 						path : data.imagePath
 					});
 
+				})
+				.catch(function(err){
+					debug('An error occurred processing the files', err);
+					reject(err);
 				})
 			;
 
