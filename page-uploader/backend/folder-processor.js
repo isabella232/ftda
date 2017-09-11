@@ -7,6 +7,7 @@ let trackFolders = 0;
 let processedFolders = 0;
 let processedFiles = 0;
 let filesTotal = 0;
+let foldersTotal = 0;
 
 function processFolderContents(folders, callback) {
 	if (folders === undefined) {
@@ -88,7 +89,7 @@ function saveFolderData(folder, callback) {
 	});
 }
 
-function uploadFiles(excludeFiles, callback) {
+function prepUpload(excludeFiles, callback) {
 	if(excludeFiles !== null) {
 		filesTotal -= excludeFiles.length;
 
@@ -113,20 +114,27 @@ function uploadFiles(excludeFiles, callback) {
 		});
 	}
 
+	foldersTotal = filesToUpload.length;
+	uploadFiles(excludeFiles, callback, true);
+}
+
+function uploadFiles(excludeFiles, callback, originalCall) {
 	if(filesToUpload.length > 0) {
-		for(let i = 0; i < filesToUpload.length; ++i) {
-			bucketUpload.uploadFiles(filesToUpload[i], false, done => {
-				++processedFiles;
+		bucketUpload.uploadFiles(filesToUpload[0], false, done => {
+			++processedFiles;
 
-				if(done) {
-					++processedFolders;
-				}
+			if(done) {
+				++processedFolders;
+				filesToUpload.shift();
+				uploadFiles(excludeFiles, callback, false);
+			}
 
-				callback({amount: processedFolders, total: filesToUpload.length, files: processedFiles, filesTotal: filesTotal, ignored: excludeFiles, invalid: invalidFiles}, (processedFolders === filesToUpload.length));
-			});
-		}
+			callback({amount: processedFolders, total: foldersTotal, files: processedFiles, filesTotal: filesTotal, ignored: excludeFiles, invalid: invalidFiles}, (processedFolders === foldersTotal));
+		});
 	} else {
-		callback(null, true);
+		if(originalCall) {
+			callback(null, true);	
+		}
 	}
 }
 
@@ -134,6 +142,7 @@ function resetFileUpload() {
 	processedFiles = 0;
 	filesTotal = 0;
 	processedFolders = 0;
+	foldersTotal = 0;
 	trackFolders = 0;
 	filesToUpload = [];
 	invalidFiles = [];
@@ -142,5 +151,5 @@ function resetFileUpload() {
 module.exports = {
 	readFolders: processFolderContents,
 	reset: resetFileUpload,
-	upload: uploadFiles
+	upload: prepUpload
 }
