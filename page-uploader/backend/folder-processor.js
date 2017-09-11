@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-let bucketUpload = require('./s3-upload.js');
+const bucketUpload = require('./s3-upload.js');
 let filesToUpload = [];
 let invalidFiles = [];
 let trackFolders = 0;

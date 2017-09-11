@@ -1,9 +1,5 @@
 const electron = require('electron');
-const { app } = electron;
-const { BrowserWindow } = electron;
-const { ipcMain } = electron;
-const { dialog } = electron;
-const { shell } = electron;
+const { app, BrowserWindow, ipcMain, dialog, shell } = electron;
 const path = require('path');
 const url = require('url');
 const { paste } = require('copy-paste');
