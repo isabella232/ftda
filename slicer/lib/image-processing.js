@@ -32,7 +32,7 @@ function crop(pic, pos){
 module.exports = {
 	process : function(filePath, coordinates){
 		console.log('Processing image:',filePath, coordinates);
-		return new Promise(function(resolve){
+		return new Promise(function(resolve, reject){
 
 			const pic = filePath;
 			
@@ -49,6 +49,10 @@ module.exports = {
 				return cropped.writeAsync(tempFile.name)
 					.then(function(){
 						return tempFile.name;
+					})
+					.catch(function(err){
+						console.log('An error occurred writing to the temporary files', err);
+						reject(err);
 					})
 				;
 
