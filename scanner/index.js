@@ -168,7 +168,7 @@ function processJob(data){
 
 						const lettersStorage = Promise.all( results.bounds.map( function( item ){
 								item.uuid = uuid();
-								return lettersDatabase.write(item, 'ftlabs-ftda-letters');
+								return lettersDatabase.write(item, 'ftlabs-ftda_letters');
 							}))
 							.catch(err => {
 								debug('An error occurred writing one or more boound results to the letters database', err);
