@@ -207,7 +207,9 @@ function processAndSlice(data){
 
 		Promise.all(articlesToProcess)
 			.then(function(){
+				debug('All images have been processed');
 				isProcessing = false;
+				currentJob = undefined;
 			})
 			.catch(function(err){
 				debug('An error occurred proccessing one of the articles in the page', err);
@@ -231,6 +233,7 @@ function processAndSlice(data){
 					})
 					.then(function(){
 						isProcessing = false;
+						currentJob = undefined;
 					})
 				;
 			})
@@ -244,7 +247,9 @@ database.connect(databaseConnectionDetails)
 	.then(function(){
 
 		setInterval(function(){
-		
+			
+			debug('Interval triggered.', 'isProcessing?', isProcessing);
+
 			if(!isProcessing){
 				getJobFromSliceQueue()
 					.then(function(job){
