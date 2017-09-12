@@ -23,8 +23,8 @@ const tmpPath = process.env.TMPPATH || '/tmp/';
 const AWS = require('aws-sdk');
 const S3 = new AWS.S3();
 
-let currentJob;
 let isProcessing = false;
+let currentJob = undefined;
 
 function getJobFromSliceQueue(){
 	// Get item from queue and return it
@@ -107,107 +107,142 @@ function processAndSlice(data){
 	isProcessing = true;
 	currentJob = data;
 
-	const random = uuid();
+	return new Promise( (resolve, reject) => {
 
-	// Example data.id
-	// FTDA-1945-0108-0001
-	const number = data['page-uuid'].replace('FTDA-', '');
-	const noDash = number.replace(/-/g, '');
-
-	const resourcePath = noDash.slice(0, noDash.length - 4); // 19450108
-	const parentPageID = data['page-uuid'];
-	const articleSections = data.slices;
-
-	debug("resourcePath:", resourcePath, "parentPageID:", parentPageID, "articleSections:", articleSections);
-
-	debug(`${resourcePath}/${parentPageID}.JPG`);
-
-	const parentPageDestination = `${tmpPath}${random}.jpg`;
-	const file = fs.createWriteStream(parentPageDestination);
-	S3.getObject({
-		Bucket : 'artefacts.ftlabs-ftda.pages',
-		Key : `${resourcePath}/${parentPageID}.JPG`
-	}).createReadStream().pipe(file);
-
-	file.on('error', function(e){
-		debug("error event");
-		debug(e);
-		file.destroy();
-	});
-
-	file.on('close', function(e){
-		file.destroy();
-		debug(`File recieved from S3 and written to ${parentPageDestination}`);
-
-		const articlesToProcess = articleSections.map(function(article){
-
-			/*
-				// Example article object
-				{"id":"FTDA-1945-0108-0001-001","coordinates":[["89","89","982","714"]]}
-			*/
-
-			return new Promise( function(resolve, reject){
-
-				imageProcessing.process(parentPageDestination, article.coordinates)
-					.then(img => {
-						debug('img:', img);
-						debug(data);
+		const random = uuid();
 		
-						fs.readFile(img.path, (err, file) => {
-							if(err){
-								debug("Error reading spliced image:", err);
-								reject(err);
-								return;
-							} else {
-								debug("Spliced image read from disk:", img.path);
-		
-								new AWS.S3({
-									params : {
-										Bucket : 'artefacts.ftlabs-ftda.articles',
-										Key : `${article.id}.jpg`
-									}
-								}).upload({Body : file}, function(){
-									debug(`Snippet ${article.id}.jpg successfully uploaded`);
-		
-									addJobToScanQueue( { parentID : parentPageID, articleID : article.id } )
-										.then(function(){
-											return deleteJobFromSliceQueue(data.id)
-												.then(function(){
-													return deleteFileFromSystem(img.path);
-												})
-											;
-										})
-										.then(function(){
-											debug('Resolving image processing job');
-											resolve();
-										})
-										.catch(function(err){
-											debug('An error occurred adding a job to the queue', err);
-											reject(data);
-										})
-									;
-									
-								});
-		
-							}
-		
-						});
-		
-					})
-					.catch(function(err){
-						debug('Image processesing error');
-						reject(err);
-					})
-				;
-
+		// Example data.id
+		// FTDA-1945-0108-0001
+		const number = data['page-uuid'].replace('FTDA-', '');
+		const noDash = number.replace(/-/g, '');
+	
+		const resourcePath = noDash.slice(0, noDash.length - 4); // 19450108
+		const parentPageID = data['page-uuid'];
+		const articleSections = data.slices;
+	
+		debug("resourcePath:", resourcePath, "parentPageID:", parentPageID, "articleSections:", articleSections);
+	
+		debug(`${resourcePath}/${parentPageID}.JPG`);
+	
+		const parentPageDestination = `${tmpPath}${random}.jpg`;
+		const file = fs.createWriteStream(parentPageDestination);
+		S3.getObject({
+			Bucket : 'artefacts.ftlabs-ftda.pages',
+			Key : `${resourcePath}/${parentPageID}.JPG`
+		}).createReadStream().pipe(file);
+	
+		file.on('error', function(e){
+			debug("error event");
+			debug(e);
+			file.destroy();
+		});
+	
+		file.on('close', function(e){
+			file.destroy();
+			debug(`File recieved from S3 and written to ${parentPageDestination}`);
+	
+			const articlesToProcess = articleSections.map(function(article){
+	
+				/*
+					// Example article object
+					{"id":"FTDA-1945-0108-0001-001","coordinates":[["89","89","982","714"]]}
+				*/
+	
+				return new Promise( function(resolve, reject){
+	
+					imageProcessing.process(parentPageDestination, article.coordinates)
+						.then(img => {
+							debug('img:', img);
+							debug(data);
+			
+							fs.readFile(img.path, (err, file) => {
+								if(err){
+									debug("Error reading spliced image:", err);
+									reject(err);
+									return;
+								} else {
+									debug("Spliced image read from disk:", img.path);
+			
+									new AWS.S3({
+										params : {
+											Bucket : 'artefacts.ftlabs-ftda.articles',
+											Key : `${article.id}.jpg`
+										}
+									}).upload({Body : file}, function(){
+										debug(`Snippet ${article.id}.jpg successfully uploaded`);
+										
+										const cleanupJobsToComplete = [];
+	
+										cleanupJobsToComplete.push( addJobToScanQueue( { parentID : parentPageID, articleID : article.id } ) );
+										cleanupJobsToComplete.push( deleteFileFromSystem(img.path) );
+	
+										Promise.all(cleanupJobsToComplete)
+											.then(function(){
+												resolve();
+											})
+											.catch(err => {
+												reject(err);
+											})
+										;
+										
+									});
+			
+								}
+			
+							});
+			
+						})
+						.catch(function(err){
+							debug('Image processesing error');
+							reject(err);
+						})
+					;
+	
+				});
+	
+	
 			});
-
-
+	
+			Promise.all(articlesToProcess)
+				.then(function(){
+					deleteJobFromSliceQueue(data.id)
+						.then(function(){
+							resolve();
+						})
+						.catch(err => {
+							debug('Err deleting job from slice queue');
+							reject(err);
+						})
+					;
+					
+				})
+				.catch(err => {
+					reject(err);
+				})
+			;
+	
 		});
 
-		Promise.all(articlesToProcess)
+	} );
+	
+}
+
+function getJobAndProcessIt(){
+
+	if(!isProcessing){
+
+		getJobFromSliceQueue()
+			.then(job => {
+	
+				if(job !== undefined){
+					job.slices = JSON.parse(job.slices);
+					return processAndSlice(job);
+				} else {
+					throw 'No job retrieved from database';
+				}
+	
+			})
 			.then(function(){
-				debug('All images have been processed');
 				isProcessing = false;
 				currentJob = undefined;
 			})
@@ -238,8 +273,10 @@ function processAndSlice(data){
 				;
 			})
 		;
-
-	});
+	
+	} else {
+		debug('A job is already processing.');
+	}
 
 }
 
@@ -247,49 +284,16 @@ database.connect(databaseConnectionDetails)
 	.then(function(){
 
 		setInterval(function(){
-			
-			debug('Interval triggered.', 'isProcessing?', isProcessing);
 
-			if(!isProcessing){
-				getJobFromSliceQueue()
-					.then(function(job){
+			debug('Interval triggered');
 
-						if(job !== undefined){
-							job.slices = JSON.parse(job.slices);
-							processAndSlice(job);
-						}
+			getJobAndProcessIt();
 
-					})
-					.catch(err => {
-
-						if(currentJob){
-							resetJobInSliceQueue(currentJob)
-								.then(function(){
-									currentJob = undefined;
-									isProcessing = false;
-								})
-								.catch(function(err){
-									debug('Catastrophic error. Exiting process', err);
-									process.exit();
-								})
-							;
-						} else {
-							isProcessing = false;
-							currentJob = undefined;
-						}
-
-					})
-				;
-			}
-		
-		}, 3000);
+		}, 5000);
 
 	})
-	.catch(function(err){
-		debug('Connection error', err);
+	.catch(err => {
+		debug('Unable to connect to database', err);
 		process.exit();
 	})
 ;
-
-
-// process.stdin.resume();
