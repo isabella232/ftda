@@ -17,7 +17,8 @@ const databaseConnectionDetails = {
 	host : process.env.DATABASE_HOST,
 	user : process.env.DATABASE_USERNAME,
 	password : process.env.DATABASE_PASSWORD,
-	port : process.env.DATABASE_PORT
+	port : process.env.DATABASE_PORT,
+	database : process.env.MYSQL_DATABASE
 };
 
 const S3 = new AWS.S3();
@@ -123,7 +124,7 @@ function processJob(data){
 			const file = fs.createWriteStream(destination);
 			debug(destination)
 			S3.getObject({
-				Bucket : 'ftlabs-archives-snippets',
+				Bucket : 'artefacts.ftlabs-ftda.articles',
 				Key : resource
 			}).createReadStream().pipe(file);
 	

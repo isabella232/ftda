@@ -33,6 +33,7 @@
     "aws-sdk": "^2.4.5",
     "debug": "^2.2.0",
     "dotenv": "^2.0.0",
+    "mysql": "^2.14.1",
     "node-babel": "^0.1.2",
     "sqs-consumer": "^3.2.0",
     "uuid": "^2.0.3",
