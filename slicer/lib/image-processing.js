@@ -29,84 +29,104 @@ function crop(pic, pos){
 	);
 }
 
+const wait = function(time = Math.random() * 20000){
+
+	debug('Waiting for:', time);
+
+	return new Promise( resolve => {
+
+		setInterval(function(){
+			resolve();
+		}, time);
+
+	});
+
+}
+
 module.exports = {
 	process : function(filePath, coordinates){
 		debug('Processing image:',filePath, coordinates);
-		return new Promise(function(resolve, reject){
 
-			const pic = filePath;
-			
-			debug('Mapping over coordinates...');
-			const tempFiles = coordinates.map(function(coords){
-				debug(coords);
-				const bounds = coords;
-				const cropped = crop(pic, bounds);
-				const tempFile = tmp.fileSync({
-					dir : '/tmp'
-				});
-				debug('cropped:', cropped);
-				debug('Returning temporary file:', tempFile.name);
-				return cropped.writeAsync(tempFile.name)
-					.then(function(){
-						return tempFile.name;
-					})
-				;
+		return wait()
+			.then(function(){
 
-			});
-
-			Promise.all(tempFiles)
-				.then(function(files){
-
-					debug('Temporary files all generated. Appending now...', files);
-
-					const image = gm(files.shift());
-
-					debug('Origin image:', image);
-
-					debug('Iterating over additional images and appending to original image...');
-					files.forEach(function(additionalImage){
-						debug(additionalImage);
-						image.append(additionalImage);
+				return new Promise(function(resolve, reject){
+		
+					const pic = filePath;
+					
+					debug('Mapping over coordinates...');
+					const tempFiles = coordinates.map(function(coords){
+						debug(coords);
+						const bounds = coords;
+						const cropped = crop(pic, bounds);
+						const tempFile = tmp.fileSync({
+							dir : '/tmp'
+						});
+						debug('cropped:', cropped);
+						debug('Returning temporary file:', tempFile.name);
+						return cropped.writeAsync(tempFile.name)
+							.then(function(){
+								return tempFile.name;
+							})
+						;
+		
 					});
-
-					const finalName = random();
-					const stitchOutputPath = `/tmp/${finalName}.jpg`;
-
-					debug('Creating write destination:', stitchOutputPath);
-
-					return image.writeAsync(stitchOutputPath)
-						.then(function(){
-							debug('Image written to:', stitchOutputPath);
-							return {
-								imagePath : stitchOutputPath,
-								tempFiles : files
-							};
+		
+					Promise.all(tempFiles)
+						.then(function(files){
+		
+							debug('Temporary files all generated. Appending now...', files);
+		
+							const image = gm(files.shift());
+		
+							debug('Origin image:', image);
+		
+							debug('Iterating over additional images and appending to original image...');
+							files.forEach(function(additionalImage){
+								debug(additionalImage);
+								image.append(additionalImage);
+							});
+		
+							const finalName = random();
+							const stitchOutputPath = `/tmp/${finalName}.jpg`;
+		
+							debug('Creating write destination:', stitchOutputPath);
+		
+							return image.writeAsync(stitchOutputPath)
+								.then(function(){
+									debug('Image written to:', stitchOutputPath);
+									return {
+										imagePath : stitchOutputPath,
+										tempFiles : files
+									};
+								})
+		
 						})
-
-				})
-				.then(function(data){
-					debug('Final output path is:', data.imagePath);
-
-					debug('Unlinking temporary files...');
-					data.tempFiles.forEach(function(t){
-						debug('Unlinking:', t);
-						fs.unlinkSync(t);
-					});
-
-					debug('Resolving original Promise');
-
-					resolve({
-						path : data.imagePath
-					});
-
-				})
-				.catch(function(err){
-					debug('An error occurred processing the files', err);
-					reject(err);
-				})
-			;
-
-		});
+						.then(function(data){
+							debug('Final output path is:', data.imagePath);
+		
+							debug('Unlinking temporary files...');
+							data.tempFiles.forEach(function(t){
+								debug('Unlinking:', t);
+								fs.unlinkSync(t);
+							});
+		
+							debug('Resolving original Promise');
+		
+							resolve({
+								path : data.imagePath
+							});
+		
+						})
+						.catch(function(err){
+							debug('An error occurred processing the files', err);
+							reject(err);
+						})
+					;
+		
+				});
+			})
+		;
 
 	}
 }

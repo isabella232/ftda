@@ -60,6 +60,8 @@ function queryTheSQLDatabase(query){
 
 		connection.query(query, (err, results, fields) => {
 
+			debug('SQL Query', query);
+
 			if(err){
 				debug('Error querying database', err);
 				reject(err);
