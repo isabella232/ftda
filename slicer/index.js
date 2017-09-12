@@ -249,29 +249,34 @@ database.connect(databaseConnectionDetails)
 						}
 
 					})
+					.catch(err => {
+
+						if(currentJob){
+							resetJobInSliceQueue(currentJob)
+								.then(function(){
+									currentJob = undefined;
+									isProcessing = false;
+								})
+								.catch(function(err){
+									console.log('Catastrophic error. Exiting process', err);
+									process.exit();
+								})
+							;
+						} else {
+							isProcessing = false;
+							currentJob = undefined;
+						}
+
+					})
 				;
 			}
 		
-		}, 1000);
+		}, 3000);
 
 	})
 	.catch(function(err){
-		console.log('Top level error', err);
-		if(currentJob){
-			resetJobInSliceQueue(currentJob)
-				.then(function(){
-					currentJob = undefined;
-					isProcessing = false;
-				})
-				.catch(function(err){
-					console.log('Catastrophic error. Exiting process', err);
-					process.exit();
-				})
-			;
-		} else {
-			isProcessing = false;
-			currentJob = undefined;
-		}
+		console.log('Connection error', err);
+		process.exit();
 	})
 ;
 
