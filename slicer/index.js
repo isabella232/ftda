@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
+const dotenv = require('dotenv').config();
 const fs = require('fs');
 const co = require('co');
-const dotenv = require('dotenv').config();
 const uuid = require('uuid').v4;
+const debug = require('debug')('slicer:index');
 
 const imageProcessing = require('./lib/image-processing');
 
@@ -54,7 +55,7 @@ function deleteJobFromSliceQueue(id){
 }
 
 function resetJobInSliceQueue(job){
-	console.log('Job reset', job);
+	debug('Job reset', job);
 	return database.query(`UPDATE slice SET status = 'available', attempts = attempts + 1 WHERE id=${job.id}`);
 }
 
@@ -65,12 +66,16 @@ function addJobToScanQueue(details){
 
 function deleteFileFromSystem(path){
 
+	debug('Deleting file from system:', path);
+
 	return new Promise( (resolve, reject) => {
 
 		fs.unlink(path, function(err){
 			if(err){
+				debug('Failed to unlink file:', err);
 				reject(err);
 			} else {
+				debug('File successfully deleted');
 				resolve();
 			}
 		});
@@ -113,9 +118,9 @@ function processAndSlice(data){
 	const parentPageID = data['page-uuid'];
 	const articleSections = data.slices;
 
-	console.log("resourcePath:", resourcePath, "parentPageID:", parentPageID, "articleSections:", articleSections);
+	debug("resourcePath:", resourcePath, "parentPageID:", parentPageID, "articleSections:", articleSections);
 
-	console.log(`${resourcePath}/${parentPageID}.JPG`);
+	debug(`${resourcePath}/${parentPageID}.JPG`);
 
 	const parentPageDestination = `${tmpPath}${random}.jpg`;
 	const file = fs.createWriteStream(parentPageDestination);
@@ -125,14 +130,14 @@ function processAndSlice(data){
 	}).createReadStream().pipe(file);
 
 	file.on('error', function(e){
-		console.log("error event");
-		console.log(e);
+		debug("error event");
+		debug(e);
 		file.destroy();
 	});
 
 	file.on('close', function(e){
 		file.destroy();
-		console.log(`File recieved from S3 and written to ${parentPageDestination}`);
+		debug(`File recieved from S3 and written to ${parentPageDestination}`);
 
 		const articlesToProcess = articleSections.map(function(article){
 
@@ -145,16 +150,16 @@ function processAndSlice(data){
 
 				imageProcessing.process(parentPageDestination, article.coordinates)
 					.then(img => {
-						console.log('img:', img);
-						console.log(data);
+						debug('img:', img);
+						debug(data);
 		
 						fs.readFile(img.path, (err, file) => {
 							if(err){
-								console.log("Error reading spliced image:", err);
+								debug("Error reading spliced image:", err);
 								reject(err);
 								return;
 							} else {
-								console.log("Spliced image read from disk:", img.path);
+								debug("Spliced image read from disk:", img.path);
 		
 								new AWS.S3({
 									params : {
@@ -162,7 +167,7 @@ function processAndSlice(data){
 										Key : `${article.id}.jpg`
 									}
 								}).upload({Body : file}, function(){
-									console.log(`Snippet ${article.id}.jpg successfully uploaded`);
+									debug(`Snippet ${article.id}.jpg successfully uploaded`);
 		
 									addJobToScanQueue( { parentID : parentPageID, articleID : article.id } )
 										.then(function(){
@@ -173,10 +178,11 @@ function processAndSlice(data){
 											;
 										})
 										.then(function(){
-											resolve(true);
+											debug('Resolving image processing job');
+											resolve();
 										})
 										.catch(function(err){
-											console.log('An error occurred adding a job to the queue', err);
+											debug('An error occurred adding a job to the queue', err);
 											reject(data);
 										})
 									;
@@ -189,7 +195,7 @@ function processAndSlice(data){
 		
 					})
 					.catch(function(err){
-						console.log('Image processesing error');
+						debug('Image processesing error');
 						reject(err);
 					})
 				;
@@ -204,7 +210,7 @@ function processAndSlice(data){
 				isProcessing = false;
 			})
 			.catch(function(err){
-				console.log('An error occurred proccessing one of the articles in the page', err);
+				debug('An error occurred proccessing one of the articles in the page', err);
 				resetJobInSliceQueue(currentJob)
 					.then(function(){
 						return getListOfFilesInDirectory('/tmp')
@@ -258,7 +264,7 @@ database.connect(databaseConnectionDetails)
 									isProcessing = false;
 								})
 								.catch(function(err){
-									console.log('Catastrophic error. Exiting process', err);
+									debug('Catastrophic error. Exiting process', err);
 									process.exit();
 								})
 							;
@@ -275,7 +281,7 @@ database.connect(databaseConnectionDetails)
 
 	})
 	.catch(function(err){
-		console.log('Connection error', err);
+		debug('Connection error', err);
 		process.exit();
 	})
 ;
