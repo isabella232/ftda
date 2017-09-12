@@ -150,9 +150,9 @@ function processJob(data){
 							new AWS.S3({
 								params : {
 									Bucket : 'artefacts.ftlabs-ftda.output-text',
-									Key : `${data.id}.txt`
+									Key : `${data['article-uuid']}.txt`
 								}
-							}).upload({Body : JSON.stringify(data)}, function(err){
+							}).upload({Body : JSON.stringify(results.plain)}, function(err){
 
 								if(err){
 									reject(err);
