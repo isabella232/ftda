@@ -2,7 +2,7 @@
   "name": "page-uploader",
   "version": "1.0.0",
   "description": "Upload FTDA data to S3",
-  "main": "app/index.js",
+  "main": "./app/index.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,8 +13,28 @@
     "copyright": "Copyright © 2017 FTLabs",
     "productName": "FTDA Page Uploader",
     "electronVersion": "1.7.5",
+    "icon": "./build/icon",
     "mac": {
       "category": "public.utility.ftda"
+    },
+    "dmg": {
+      "title": "FTDA Upload Installer",
+      "icon": "./build/icon.icns",
+      "iconSize": 128,
+      "contents": [
+        {
+          "x": 388,
+          "y": 160,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 128,
+          "y": 160,
+          "type": "file",
+          "path": ""
+        }
+      ]
     }
   },
   "repository": {

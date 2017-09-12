@@ -5,6 +5,7 @@ const fileSubmit = document.getElementById('existingFiles');
 const proceed = document.getElementById('proceed');
 const progress = document.getElementById('progress');
 let currentFiles = null;
+let startTime;
 
 const keys = window.localStorage.getItem('hasKeys');
 
@@ -53,6 +54,7 @@ function proceedWithUpload(e) {
 	proceed.style.display = 'none';
 	currentFiles = null;
 	progress.innerHTML = 'Preparing...';
+	startTime = new Date();
 	trigger.disabled = true;
 }
 
@@ -151,7 +153,8 @@ ipcRenderer.on('upload-progress', (event, values, done) => {
 	if(values === null) {
 		progress.textContent = 'No issues to update';
 	} else {
-		progress.innerHTML = `<p>Uploaded: ${values.amount} issue${values.amount > 1?'s':''} out of ${values.total}; ${values.files} file${values.files > 1?'s':''} out of ${values.filesTotal}</p>`;
+		progress.innerHTML = `<p>Upload started <time>${startTime}</time></p>`;
+		progress.innerHTML += `<p>Uploaded: ${values.amount} issue${values.amount > 1?'s':''} out of ${values.total}; ${values.files} file${values.files > 1?'s':''} out of ${values.filesTotal}</p>`;
 		if(values.ignored !== null || values.invalid.length > 0) {
 			const ignoredTotal = (values.ignored !== null)?values.ignored.length:0 + values.invalid.length;
 			progress.innerHTML += `<p>Ignored: ${ignoredTotal} file${ ignoredTotal > 1?'s':''}</p>`;
@@ -159,7 +162,7 @@ ipcRenderer.on('upload-progress', (event, values, done) => {
 	}
 
 	if(done) {
-		progress.innerHTML += `Upload done.`
+		progress.innerHTML += `Upload done. <time>${new Date()}</time>`;
 		trigger.disabled = false;
 	}
 });
