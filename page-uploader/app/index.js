@@ -10,7 +10,7 @@ const KEYS = require('./keys.js');
 let mainWindow;
 
 function createWindow () {
-    mainWindow = new BrowserWindow({width: 800, height: 600, x: 560, y: -1057});
+    mainWindow = new BrowserWindow({width: 800, height: 600});
 
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
@@ -91,7 +91,7 @@ ipcMain.on('exclude-files', (event, files) => {
 });
 
 ipcMain.on('get-keys', event => {
-    shell.openExternal(process.env.KEY_FETCH_URL);
+    shell.openExternal(KEYS.KEY_FETCH_URL);
 });
 
 ipcMain.on('set-keys', (event, data) => {
@@ -99,9 +99,13 @@ ipcMain.on('set-keys', (event, data) => {
         KEYS.set(JSON.parse(data));
     } else {
         paste((err, data) => {
-            const keys = JSON.parse(data);
-            KEYS.set(keys);
-            event.sender.send('save-keys', data);
+            try {
+                const keys = JSON.parse(data);
+                KEYS.set(keys);
+                event.sender.send('save-keys', data);  
+            } catch(e) {
+                showError(event, {error: 'You must copy the keys from your browser before you continue', code: 'BadJSON'});
+            }            
         });
     }
 });

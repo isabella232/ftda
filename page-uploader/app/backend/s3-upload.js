@@ -1,4 +1,3 @@
-require('dotenv').config();
 const s3 = require('@monolambda/s3');
 const KEYS = require('./../keys.js');
 
@@ -14,7 +13,7 @@ function setClient() {
 		s3Options: {
 			accessKeyId: KEYS.key(),
 			secretAccessKey: KEYS.secret(),
-			region: process.env.AWS_REGION
+			region: KEYS.AWS_REGION
 		}
 	});
 }
@@ -38,13 +37,12 @@ function checkFiles(archiveData, callback) {
 
 		return new Promise((resolve, reject) => {
 			client.s3.headObject({
-			  Bucket: process.env.AWS_BUCKET,
+			  Bucket: KEYS.AWS_BUCKET,
 			  Key: path + '/' + file
 			}, (err, data) => {
 				if (!err) {
 					resolve(fileObject);
 				} else {
-					// console.log('checkfile', err);
 					if(err.statusCode === 404) {
 						resolve(null);	
 					} else {
@@ -95,7 +93,7 @@ function uploadFiles(pageData, isXML, callback) {
 		localFile: file,
 
 		s3Params: {
-			Bucket: process.env.AWS_BUCKET,
+			Bucket: KEYS.AWS_BUCKET,
 			Key: path + '/' + file.split('/').pop()
 		}
 	};

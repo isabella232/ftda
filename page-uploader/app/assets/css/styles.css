@@ -3,6 +3,10 @@ body {
 	font-family: MetricWeb, sans-serif;
 }
 
+time {
+	color: #08474D;
+}
+
 #auth {
 	display: none;
 }
