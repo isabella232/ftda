@@ -13,7 +13,6 @@ debug("ADJ PATH:", process.env['PATH']);*/
 const Promise = require('bluebird');
 const debug = require('debug')('image-processing');
 const gm = require('gm');
-const tmp = require('tmp');
 const random = require('uuid').v4;
 
 const fs = Promise.promisifyAll(require('fs'));
@@ -59,14 +58,14 @@ module.exports = {
 						debug(coords);
 						const bounds = coords;
 						const cropped = crop(pic, bounds);
-						const tempFile = tmp.fileSync({
-							dir : '/tmp'
-						});
+
+						const tempFilePath = `/tmp/${random()}.tmp`;
+						fs.openSync(tempFilePath, "w");
 						debug('cropped:', cropped);
-						debug('Returning temporary file:', tempFile.name);
-						return cropped.writeAsync(tempFile.name)
+						debug('Returning temporary file:', tempFilePath);
+						return cropped.writeAsync(tempFilePath)
 							.then(function(){
-								return tempFile.name;
+								return tempFilePath;
 							})
 						;
 		
@@ -76,7 +75,7 @@ module.exports = {
 						.then(function(files){
 		
 							debug('Temporary files all generated. Appending now...', files);
-		
+							const fileList = [...files];
 							const image = gm(files.shift());
 		
 							debug('Origin image:', image);
@@ -97,7 +96,7 @@ module.exports = {
 									debug('Image written to:', stitchOutputPath);
 									return {
 										imagePath : stitchOutputPath,
-										tempFiles : files
+										tempFiles : fileList
 									};
 								})
 		
@@ -106,17 +105,34 @@ module.exports = {
 							debug('Final output path is:', data.imagePath);
 		
 							debug('Unlinking temporary files...');
-							data.tempFiles.forEach(function(t){
+							const cleanUp = data.tempFiles.map(function(t){
 								debug('Unlinking:', t);
-								fs.unlinkSync(t);
+
+								return new Promise( (resolve, reject) => {
+									fs.unlink(t, err => {
+										if(err){
+											debug('There was an error unlinking:', t);
+											reject(err);
+										} else {
+											resolve();
+										}
+									})
+								});
+
 							});
-		
-							debug('Resolving original Promise');
-		
-							resolve({
-								path : data.imagePath
-							});
-		
+							
+							Promise.all(cleanUp)
+								.then(function(){
+
+									debug('Resolving original Promise');
+									
+									resolve({
+										path : data.imagePath
+									});
+				
+								})
+							;
+
 						})
 						.catch(function(err){
 							debug('An error occurred processing the files', err);

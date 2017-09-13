@@ -108,8 +108,6 @@ function processAndSlice(data){
 	currentJob = data;
 
 	return new Promise( (resolve, reject) => {
-
-		const random = uuid();
 		
 		// Example data.id
 		// FTDA-1945-0108-0001
@@ -124,7 +122,7 @@ function processAndSlice(data){
 	
 		debug(`${resourcePath}/${parentPageID}.JPG`);
 	
-		const parentPageDestination = `${tmpPath}${random}.jpg`;
+		const parentPageDestination = `${tmpPath}${data['page-uuid']}.jpg`;
 		const file = fs.createWriteStream(parentPageDestination);
 		S3.getObject({
 			Bucket : 'artefacts.ftlabs-ftda.pages',
@@ -174,7 +172,7 @@ function processAndSlice(data){
 										const cleanupJobsToComplete = [];
 	
 										cleanupJobsToComplete.push( addJobToScanQueue( { parentID : parentPageID, articleID : article.id } ) );
-										cleanupJobsToComplete.push( deleteFileFromSystem(img.path) );
+										cleanupJobsToComplete.push( deleteFileFromSystem( img.path ) );
 	
 										Promise.all(cleanupJobsToComplete)
 											.then(function(){
@@ -206,6 +204,9 @@ function processAndSlice(data){
 			Promise.all(articlesToProcess)
 				.then(function(){
 					deleteJobFromSliceQueue(data.id)
+						.then(function(){
+							return deleteFileFromSystem(parentPageDestination);
+						})
 						.then(function(){
 							resolve();
 						})
