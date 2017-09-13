@@ -48,8 +48,7 @@ function getJobFromScanQueue(){
 
 function deleteJobFromScanQueue(id){
 	// Delete job from scan queue when it's been completed
-	// return database.query(`DELETE FROM scan WHERE id=${id}`);
-	return resetJobInScanQueue(currentJob);
+	return database.query(`DELETE FROM scan WHERE id=${id}`);
 }
 
 function resetJobInScanQueue(job){
