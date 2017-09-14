@@ -7,7 +7,7 @@ The use of this tool is restricted to FT Staff and requires authentication.
 
 ## Things that are restricted
 - You need to be authenticated (you can go through the authentication process within the app)
-- If your aim is to upload files for the FT Archive, you should be using the compiled application, not run the source
+- If your aim is to upload files for the FT Archive, you should be using the compiled application, not run the source (speak to Labs to get the application and the files)
 - The files to upload can only be XML or JPG, and need to have a valid name format
 - The compiled application is for Mac only at the moment
 
