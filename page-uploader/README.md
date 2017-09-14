@@ -14,7 +14,7 @@ The use of this tool is restricted to FT Staff and requires authentication.
 ## For developers
 
 ### Settings
-Before compiling the application, ensure you fill in the relevant information in `keys.js`, regarding the bucket name, bucket region, and authenticator URL. These can be found in the project document (P42).
+Before compiling the application, ensure you fill in the relevant information in `keys.js`, regarding the bucket name, bucket region, and authenticator URL. These can be found in the [project document](https://drive.google.com/drive/folders/0ByuKzl5VTNFgaHBrS3R1a0NUSEU) (P42).
 To run the application without compiling, you need a `.env` file with the same variables. (Run `npm start` after creating your environment variables).
 
 Add the icons in a `build` folder (these can also be found in the project document).
