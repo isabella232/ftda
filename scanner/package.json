@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/Financial-Times/FT-Labs-AWS-Archives#readme",
   "devDependencies": {
-    "s3rver": "^1.0.2"
+    "s3rver": "^2.2.7"
   },
   "dependencies": {
     "aws-sdk": "^2.4.5",
