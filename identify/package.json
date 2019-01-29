@@ -4,7 +4,9 @@
   "description": "A lambda function that takes an image and an object describing areas to crop within that image",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "engines": {
     "node": "4.3.0"
@@ -26,6 +28,8 @@
     "uuid": "^2.0.2",
     "walk": "^2.3.14",
     "xml2js": "^0.4.17",
-    "yargs": "^4.8.0"
-  }
+    "yargs": "^4.8.0",
+    "snyk": "^1.123.0"
+  },
+  "snyk": true
 }
