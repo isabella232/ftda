@@ -14,3 +14,6 @@ patch:
   'npm:minimatch:20160620':
     - node-babel > babel > chokidar > readdirp > minimatch:
         patched: '2018-12-10T11:16:43.955Z'
+  SNYK-JS-LODASH-450202:
+    - sqs-consumer > async > lodash:
+        patched: '2019-07-04T09:04:46.335Z'
