@@ -4,13 +4,28 @@ version: v1.13.1
 ignore:
   'npm:mol-proto:20160407':
     - node-babel > mol-proto:
-        reason: No patch available
-        expires: '2019-01-09T11:11:50.225Z'
+        reason: No patch
+        expires: '2019-08-03T09:00:35.821Z'
+  SNYK-JS-LODASH-450202:
+    - node-babel > babel > lodash:
+        reason: No patch
+        expires: '2019-08-03T09:00:35.821Z'
+  SNYK-JS-LODASH-73638:
+    - node-babel > babel > lodash:
+        reason: No patch
+        expires: '2019-08-03T09:00:35.821Z'
+  SNYK-JS-LODASH-73639:
+    - node-babel > babel > lodash:
+        reason: No patch
+        expires: '2019-08-03T09:00:35.821Z'
 # patches apply the minimum changes required to fix a vulnerability
 patch:
   'npm:lodash:20180130':
     - node-babel > babel > lodash:
-        patched: '2018-12-10T11:10:35.833Z'
+        patched: '2019-07-04T08:59:17.384Z'
   'npm:minimatch:20160620':
     - node-babel > babel > chokidar > readdirp > minimatch:
-        patched: '2018-12-10T11:10:35.833Z'
+        patched: '2019-07-04T08:59:17.384Z'
+  SNYK-JS-LODASH-450202:
+    - async > lodash:
+        patched: '2019-07-04T08:59:17.384Z'
