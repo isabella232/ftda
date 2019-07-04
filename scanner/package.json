@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "prepare": "mkdir -p ./bin && mkdir -p ./bin/s3 && mkdir -p ./bin/tmp && mkdir -p ./bin/tmp/out && mkdir -p ./bin/tmp/in",
+    "prepare": "npm run snyk-protect; mkdir -p ./bin && mkdir -p ./bin/s3 && mkdir -p ./bin/tmp && mkdir -p ./bin/tmp/out && mkdir -p ./bin/tmp/in",
     "test": "echo \"Sorry, no tests #Labs\"",
     "clean": "rm -rf ./bin && npm run prepare",
-    "postinstall": "npm run prepare"
+    "postinstall": "npm run prepare",
+    "snyk-protect": "snyk protect"
   },
   "engines": {
     "node": "4.3.0"
@@ -38,6 +39,8 @@
     "sqs-consumer": "^3.2.0",
     "uuid": "^2.0.3",
     "valid-url": "^1.0.9",
-    "yargs": "^4.7.1"
-  }
+    "yargs": "^4.7.1",
+    "snyk": "^1.116.4"
+  },
+  "snyk": true
 }
