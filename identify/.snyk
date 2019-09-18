@@ -22,7 +22,7 @@ ignore:
 patch:
   'npm:lodash:20180130':
     - node-babel > babel > lodash:
-        patched: '2019-07-04T08:59:17.384Z'
+        patched: '2019-09-18T10:10:35.009Z'
   'npm:minimatch:20160620':
     - node-babel > babel > chokidar > readdirp > minimatch:
         patched: '2019-07-04T08:59:17.384Z'
