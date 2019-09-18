@@ -28,19 +28,19 @@
   },
   "homepage": "https://github.com/Financial-Times/FT-Labs-AWS-Archives#readme",
   "devDependencies": {
-    "s3rver": "^2.2.7"
+    "s3rver": "^2.2.9"
   },
   "dependencies": {
-    "aws-sdk": "^2.4.5",
+    "aws-sdk": "^2.530.0",
     "debug": "^2.2.0",
     "dotenv": "^2.0.0",
-    "mysql": "^2.14.1",
+    "mysql": "^2.17.1",
     "node-babel": "^0.1.2",
+    "snyk": "^1.116.4",
     "sqs-consumer": "^3.2.0",
     "uuid": "^2.0.3",
     "valid-url": "^1.0.9",
-    "yargs": "^4.7.1",
-    "snyk": "^1.116.4"
+    "yargs": "^4.7.1"
   },
   "snyk": true
 }

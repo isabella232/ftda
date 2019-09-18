@@ -14,8 +14,8 @@
   "author": "Sean M. Tracey & Pete Clark",
   "license": "MIT",
   "dependencies": {
-    "async": "^2.6.2",
-    "aws-sdk": "^2.488.0",
+    "async": "^2.6.3",
+    "aws-sdk": "^2.530.0",
     "bluebird": "^3.5.5",
     "co": "^4.6.0",
     "debug": "^2.2.0",
@@ -24,12 +24,12 @@
     "home": "^1.0.1",
     "moment": "^2.24.0",
     "node-babel": "^0.1.2",
+    "snyk": "^1.116.4",
     "tmp": "0.0.28",
     "uuid": "^2.0.2",
     "walk": "^2.3.14",
-    "xml2js": "^0.4.17",
-    "yargs": "^4.8.0",
-    "snyk": "^1.116.4"
+    "xml2js": "^0.4.22",
+    "yargs": "^4.8.0"
   },
   "snyk": true
 }
