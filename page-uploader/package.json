@@ -46,7 +46,7 @@
   "author": "Sean M. Tracey & Lily Madar",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^1.8.8",
+    "electron": "^9.1.0",
     "electron-builder": "^19.56.2"
   },
   "dependencies": {
